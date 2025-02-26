@@ -1,0 +1,697 @@
+/* UI-specific styles for Startup Tycoon */
+
+/* Dashboard metrics */
+.dashboard-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.metric-card {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  border-radius: 3px;
+}
+
+.metric-card h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #33ff33;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #33ff33;
+}
+
+.metric-trend {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 0.9rem;
+}
+
+.trend-up {
+  color: #00ff00;
+}
+
+.trend-down {
+  color: #ff3333;
+}
+
+/* Charts and Graphs */
+.chart-container {
+  height: 200px;
+  margin: 20px 0;
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+}
+
+/* Product Features */
+.feature-list {
+  margin-top: 20px;
+}
+
+.feature-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: #222;
+  border: 1px solid #33ff33;
+  margin-bottom: 10px;
+  border-radius: 3px;
+}
+
+.feature-info {
+  flex: 1;
+}
+
+.feature-name {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.feature-description {
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
+.feature-cost {
+  background-color: #333;
+  padding: 5px 10px;
+  border-radius: 3px;
+  margin-left: 10px;
+}
+
+.feature-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Team Management */
+.team-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.team-section {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  border-radius: 3px;
+}
+
+.team-section h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #33ff33;
+}
+
+.employee-list {
+  margin-top: 15px;
+}
+
+.employee-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #333;
+}
+
+.employee-name {
+  font-weight: bold;
+}
+
+.employee-role {
+  color: #aaaaaa;
+  font-size: 0.9rem;
+}
+
+.employee-salary {
+  color: #ffcc00;
+}
+
+/* Marketing & Sales */
+.marketing-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.marketing-channel {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  border-radius: 3px;
+}
+
+.marketing-channel h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #33ff33;
+}
+
+.channel-stats {
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.channel-slider {
+  width: 100%;
+  margin: 15px 0;
+}
+
+/* Funding & Finance */
+.financial-info {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.financial-section {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  border-radius: 3px;
+}
+
+.financial-section h3 {
+  font-size: 1rem;
+  margin-bottom: 15px;
+  color: #33ff33;
+}
+
+.financial-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.financial-table th,
+.financial-table td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid #333;
+}
+
+.financial-table th {
+  color: #aaaaaa;
+  font-weight: normal;
+}
+
+.positive-value {
+  color: #00ff00;
+}
+
+.negative-value {
+  color: #ff3333;
+}
+
+/* Market & Competitors */
+.market-news {
+  margin-bottom: 30px;
+}
+
+.news-item {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 3px;
+}
+
+.news-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #33ff33;
+}
+
+.news-date {
+  font-size: 0.8rem;
+  color: #aaaaaa;
+  margin-bottom: 10px;
+}
+
+.news-content {
+  line-height: 1.4;
+}
+
+.competitor-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.competitor-card {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  border-radius: 3px;
+}
+
+.competitor-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.competitor-name {
+  font-weight: bold;
+  color: #33ff33;
+}
+
+.competitor-valuation {
+  color: #ffcc00;
+}
+
+.competitor-details {
+  font-size: 0.9rem;
+  margin-bottom: 10px;
+}
+
+.competitor-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.competitor-stat {
+  text-align: center;
+}
+
+.competitor-stat-value {
+  font-weight: bold;
+  color: #33ff33;
+}
+
+.competitor-stat-label {
+  font-size: 0.8rem;
+  color: #aaaaaa;
+}
+
+/* Slider Styles */
+.slider-container {
+  margin: 15px 0;
+}
+
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.slider-value {
+  font-weight: bold;
+}
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #333;
+  border: 1px solid #33ff33;
+  border-radius: 5px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #33ff33;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: #33ff33;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+/* Turn Summary */
+.turn-summary {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  border-radius: 3px;
+  margin-bottom: 20px;
+}
+
+.summary-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #33ff33;
+  margin-bottom: 15px;
+  text-align: center;
+  border-bottom: 1px solid #33ff33;
+  padding-bottom: 10px;
+}
+
+.summary-section {
+  margin-bottom: 15px;
+}
+
+.summary-section h3 {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  color: #33ff33;
+}
+
+.toggle-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background-color: #333;
+  border: 1px solid #33ff33;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.toggle-header:hover {
+  background-color: #444;
+}
+
+.toggle-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.toggle-text {
+  font-weight: bold;
+  color: #33ff33;
+}
+
+.toggle-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s;
+}
+
+.competitors-content {
+  padding: 10px;
+}
+
+.summary-list {
+  list-style-type: none;
+}
+
+.summary-list li {
+  margin-bottom: 8px;
+  padding-left: 15px;
+  position: relative;
+}
+
+.summary-footer {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 10px;
+  border-top: 1px solid #33ff33;
+}
+
+.event-choices {
+  margin-top: 20px;
+}
+
+.event-choice {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.event-choice:hover {
+  background-color: #333;
+  box-shadow: 0 0 5px rgba(51, 255, 51, 0.7);
+}
+
+.event-choice-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.event-choice-description {
+  font-size: 0.9rem;
+  color: #cccccc;
+}
+
+/* Resource Allocation */
+.resource-allocation {
+  margin-top: 20px;
+}
+
+.allocation-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #33ff33;
+  margin-bottom: 15px;
+}
+
+.allocation-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.allocation-item {
+  background-color: #222;
+  border: 1px solid #33ff33;
+  padding: 15px;
+  border-radius: 3px;
+}
+
+.allocation-item h4 {
+  margin-bottom: 10px;
+}
+
+.allocation-value {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+/* Tab System */
+.tab-container {
+  margin-top: 20px;
+}
+
+.tab-buttons {
+  display: flex;
+  border-bottom: 1px solid #33ff33;
+}
+
+.tab-button {
+  padding: 10px 15px;
+  background-color: #222;
+  border: 1px solid #33ff33;
+  border-bottom: none;
+  margin-right: 5px;
+  cursor: pointer;
+  border-radius: 3px 3px 0 0;
+}
+
+.tab-button.active {
+  background-color: #005500;
+  font-weight: bold;
+}
+
+.tab-content {
+  padding: 15px;
+}
+
+.tab-panel {
+  display: none;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* Share Buttons */
+.share-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  gap: 10px;
+}
+
+.share-button {
+  background-color: #333;
+  color: #33ff33;
+  border: 1px solid #33ff33;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 3px;
+}
+
+.share-button:hover {
+  background-color: #444;
+  box-shadow: 0 0 5px rgba(51, 255, 51, 0.7);
+}
+
+.share-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+#share-x-button {
+  background-color: #000;
+}
+
+#share-facebook-button {
+  background-color: #1877f2;
+}
+
+#share-linkedin-button {
+  background-color: #0077b5;
+}
+
+/* Mobile Responsive Adjustments */
+@media (max-width: 768px) {
+  .dashboard-metrics,
+  .marketing-options,
+  .financial-info,
+  .competitor-list,
+  .allocation-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+
+  .team-stats {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .feature-actions {
+    margin-top: 10px;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .feature-cost {
+    margin-left: 0;
+    margin-top: 5px;
+  }
+
+  .tab-buttons {
+    flex-wrap: wrap;
+  }
+
+  .tab-button {
+    margin-bottom: 5px;
+  }
+
+  .competitor-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .employee-item {
+    flex-direction: column;
+  }
+
+  .employee-salary {
+    margin-top: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-metrics,
+  .marketing-options,
+  .financial-info,
+  .competitor-list,
+  .allocation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-card {
+    padding: 10px;
+  }
+
+  .metric-value {
+    font-size: 1.3rem;
+  }
+
+  .financial-table th,
+  .financial-table td {
+    padding: 6px 4px;
+    font-size: 0.9rem;
+  }
+
+  .news-item {
+    padding: 10px;
+  }
+
+  .news-title {
+    font-size: 0.95rem;
+  }
+
+  .news-content {
+    font-size: 0.9rem;
+  }
+
+  .competitor-card {
+    padding: 10px;
+  }
+
+  .competitor-stats {
+    gap: 5px;
+  }
+
+  .event-choice {
+    padding: 10px;
+  }
+
+  .summary-title {
+    font-size: 1.1rem;
+  }
+
+  .toggle-header {
+    padding: 6px;
+  }
+}
+
+@media (max-width: 320px) {
+  .metric-value {
+    font-size: 1.1rem;
+  }
+
+  .metric-trend {
+    font-size: 0.8rem;
+  }
+
+  .financial-table th,
+  .financial-table td {
+    font-size: 0.8rem;
+  }
+
+  .competitor-stat-value {
+    font-size: 0.9rem;
+  }
+
+  .competitor-stat-label {
+    font-size: 0.7rem;
+  }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Startup Tycoon Debug</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+      }
+      iframe {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #ccc;
+      }
+      #debug-output {
+        margin-top: 20px;
+        padding: 10px;
+        background: #f0f0f0;
+        border: 1px solid #ccc;
+        height: 200px;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Startup Tycoon Debug</h1>
+    <iframe id="game-frame" src="index.html"></iframe>
+    <div id="debug-output">Debug output will appear here</div>
+
+    <script>
+      // Inject console logging into the iframe
+      window.addEventListener("load", () => {
+        const iframe = document.getElementById("game-frame");
+        const debugOutput = document.getElementById("debug-output");
+
+        // Wait for iframe to load
+        iframe.onload = function () {
+          const iframeWindow = iframe.contentWindow;
+          const originalConsoleLog = iframeWindow.console.log;
+          const originalConsoleError = iframeWindow.console.error;
+
+          // Override console.log
+          iframeWindow.console.log = function () {
+            // Call original console.log
+            originalConsoleLog.apply(this, arguments);
+
+            // Add to debug output
+            const message = Array.from(arguments).join(" ");
+            const logEntry = document.createElement("div");
+            logEntry.textContent = `LOG: ${message}`;
+            debugOutput.appendChild(logEntry);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+          };
+
+          // Override console.error
+          iframeWindow.console.error = function () {
+            // Call original console.error
+            originalConsoleError.apply(this, arguments);
+
+            // Add to debug output
+            const message = Array.from(arguments).join(" ");
+            const logEntry = document.createElement("div");
+            logEntry.textContent = `ERROR: ${message}`;
+            logEntry.style.color = "red";
+            debugOutput.appendChild(logEntry);
+            debugOutput.scrollTop = debugOutput.scrollHeight;
+          };
+
+          // Add event listener to track start button clicks
+          const startButton =
+            iframe.contentDocument.getElementById("start-game-button");
+          if (startButton) {
+            startButton.addEventListener("click", function () {
+              const logEntry = document.createElement("div");
+              logEntry.textContent = `CLICK: Start button clicked`;
+              logEntry.style.color = "blue";
+              debugOutput.appendChild(logEntry);
+            });
+          }
+        };
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Startup Tycoon - Build Your Empire</title>
+    <link rel="stylesheet" href="src/css/styles.css" />
+    <link rel="stylesheet" href="src/css/retro.css" />
+    <link rel="stylesheet" href="src/css/ui.css" />
+  </head>
+  <body>
+    <div class="game-container">
+      <div class="game-header">
+        <div class="header-left">
+          <h1 class="game-title">Startup Tycoon</h1>
+          <button id="mobile-menu-toggle" class="mobile-menu-toggle">
+            <span class="menu-icon"></span>
+          </button>
+        </div>
+        <div class="game-stats">
+          <div class="stat-item" id="current-turn">Turn: 1</div>
+          <div class="stat-item" id="current-cash">Cash: $1,000,000</div>
+          <div class="stat-item" id="current-users">Users: 0</div>
+          <div class="stat-item" id="current-valuation">
+            Valuation: $1,000,000
+          </div>
+        </div>
+      </div>
+
+      <div class="game-content">
+        <div class="sidebar" id="sidebar">
+          <div class="company-info panel">
+            <h2>Your Company</h2>
+            <div id="company-details">
+              <!-- Company info will be populated here -->
+              <div class="company-name">
+                Name: <span id="company-name-value"></span>
+              </div>
+              <div class="company-industry">
+                Industry: <span id="company-industry-value"></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="menu-buttons">
+            <button class="menu-button" data-screen="dashboard">
+              Dashboard
+            </button>
+            <button class="menu-button" data-screen="product">Product</button>
+            <button class="menu-button" data-screen="team">Team</button>
+            <button class="menu-button" data-screen="marketing">
+              Marketing
+            </button>
+            <button class="menu-button" data-screen="funding">Funding</button>
+            <button class="menu-button" data-screen="market">Market</button>
+          </div>
+
+          <div class="action-buttons">
+            <button id="end-turn-button" class="primary-button">
+              End Turn
+            </button>
+            <button id="save-game-button" class="secondary-button">
+              Save Game
+            </button>
+            <div
+              class="share-buttons"
+              style="
+                margin-top: 10px;
+                display: flex;
+                justify-content: space-between;
+              "
+            >
+              <button
+                id="share-x-button"
+                class="share-button"
+                title="Share on X"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"
+                  />
+                </svg>
+              </button>
+              <button
+                id="share-facebook-button"
+                class="share-button"
+                title="Share on Facebook"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M9.198 21.5h4v-8.01h3.604l.396-3.98h-4V7.5a1 1 0 0 1 1-1h3v-4h-3a5 5 0 0 0-5 5v2.01h-2l-.396 3.98h2.396v8.01Z"
+                  />
+                </svg>
+              </button>
+              <button
+                id="share-linkedin-button"
+                class="share-button"
+                title="Share on LinkedIn"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                >
+                  <path
+                    d="M6.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3ZM5 10a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1H5ZM16.5 11a4.5 4.5 0 0 0-3.5 1.677V11a1 1 0 0 0-1-1h-3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-4.5a2 2 0 0 1 4 0V19a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-5a4.5 4.5 0 0 0-4.5-4.5Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="main-panel">
+          <!-- Different screens will be displayed here -->
+          <div class="screen" id="dashboard-screen">
+            <h2>Dashboard</h2>
+            <div class="dashboard-metrics">
+              <!-- Dashboard info will go here -->
+            </div>
+          </div>
+
+          <div class="screen" id="product-screen" style="display: none">
+            <h2>Product Development</h2>
+            <div class="feature-list">
+              <!-- Product features will go here -->
+            </div>
+          </div>
+
+          <div class="screen" id="team-screen" style="display: none">
+            <h2>Team Management</h2>
+            <div class="team-stats">
+              <!-- Team info will go here -->
+            </div>
+          </div>
+
+          <div class="screen" id="marketing-screen" style="display: none">
+            <h2>Marketing & Sales</h2>
+            <div class="marketing-options">
+              <!-- Marketing settings will go here -->
+            </div>
+          </div>
+
+          <div class="screen" id="funding-screen" style="display: none">
+            <h2>Funding & Finance</h2>
+            <div class="financial-info">
+              <!-- Financial details will go here -->
+            </div>
+          </div>
+
+          <div class="screen" id="market-screen" style="display: none">
+            <h2>Market & Competitors</h2>
+            <div class="market-news">
+              <!-- Market news and competitors will go here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="notifications" id="notification-area">
+        <!-- Notifications will appear here -->
+      </div>
+
+      <!-- Game Start Modal -->
+      <div class="modal" id="start-game-modal">
+        <div class="modal-content">
+          <h2>Start Your Startup Journey</h2>
+          <div class="form-group">
+            <label for="company-name-input">Company Name:</label>
+            <input
+              type="text"
+              id="company-name-input"
+              placeholder="Enter company name"
+            />
+          </div>
+          <div class="form-group">
+            <label for="industry-select">Choose Industry:</label>
+            <select id="industry-select">
+              <option value="saas">SaaS (Software as a Service)</option>
+              <option value="ecommerce">E-Commerce</option>
+              <option value="fintech">FinTech</option>
+              <option value="social">Social Media</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="difficulty-select">Difficulty:</label>
+            <select id="difficulty-select">
+              <option value="easy">
+                Easy - More funding, forgiving market
+              </option>
+              <option value="normal">Normal - Balanced experience</option>
+              <option value="hard">
+                Hard - Limited funding, aggressive competitors
+              </option>
+            </select>
+          </div>
+          <button id="start-game-button" class="primary-button">
+            Start Your Company
+          </button>
+        </div>
+      </div>
+
+      <!-- Event Modal -->
+      <div class="modal" id="event-modal" style="display: none">
+        <div class="modal-content">
+          <h2 id="event-title">Market Event</h2>
+          <p id="event-description">Event description goes here.</p>
+          <div id="event-choices">
+            <!-- Event choices will go here if available -->
+          </div>
+          <button id="event-acknowledge-button" class="primary-button">
+            Acknowledge
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="src/js/config.js"></script>
+    <script src="src/js/core/game.js"></script>
+    <script src="src/js/core/company.js"></script>
+    <script src="src/js/core/turn-manager.js"></script>
+    <script src="src/js/core/market.js"></script>
+    <script src="src/js/core/events.js"></script>
+    <script src="src/js/core/ai-competitors.js"></script>
+    <script src="src/js/ui/ui-manager.js"></script>
+    <script src="src/js/utils/helpers.js"></script>
+    <script src="src/js/main.js"></script>
+  </body>
+</html>
