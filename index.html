@@ -16,6 +16,7 @@
           <button id="mobile-menu-toggle" class="mobile-menu-toggle">
             <span class="menu-icon"></span>
           </button>
+          <a href="#" id="about-link" class="about-link">About</a>
         </div>
         <div class="game-stats">
           <div class="stat-item" id="current-turn">Turn: 1</div>
@@ -173,6 +174,24 @@
 
       <div class="notifications" id="notification-area">
         <!-- Notifications will appear here -->
+      </div>
+
+      <!-- About Modal -->
+      <div class="modal" id="about-modal" style="display: none">
+        <div class="modal-content">
+          <h2>About Startup Tycoon</h2>
+          <p>
+            This game was created as a fun experiment by
+            <a
+              href="https://www.linkedin.com/in/etaymor/"
+              target="_blank"
+              rel="noopener noreferrer"
+              >Emerson Taymor</a
+            >
+            doing Vibe Coding with Cursor.
+          </p>
+          <button id="close-about-button" class="primary-button">Close</button>
+        </div>
       </div>
 
       <!-- Game Start Modal -->

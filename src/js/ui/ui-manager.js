@@ -16,6 +16,11 @@ class UIManager {
       gameContainer: document.querySelector(".game-container"),
       notifications: document.getElementById("notification-area"),
 
+      // About modal elements
+      aboutLink: document.getElementById("about-link"),
+      aboutModal: document.getElementById("about-modal"),
+      closeAboutButton: document.getElementById("close-about-button"),
+
       // Stats
       turnCounter: document.getElementById("current-turn"),
       cashDisplay: document.getElementById("current-cash"),
@@ -58,7 +63,6 @@ class UIManager {
       ),
     };
 
-    // Initialize UI
     this._initializeUI();
   }
 
@@ -69,6 +73,9 @@ class UIManager {
   _initializeUI() {
     // Initialize menu navigation
     this._initializeNavigation();
+
+    // Initialize About modal
+    this._initializeAboutModal();
 
     // Set up action button listeners
     this._initializeActionButtons();
@@ -84,6 +91,30 @@ class UIManager {
 
     // Apply CRT effect if enabled
     this._applyCRTEffect();
+  }
+
+  /**
+   * Initialize About modal functionality
+   * @private
+   */
+  _initializeAboutModal() {
+    if (
+      !this.elements.aboutLink ||
+      !this.elements.aboutModal ||
+      !this.elements.closeAboutButton
+    )
+      return;
+
+    this.elements.aboutLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.elements.aboutModal.style.display = "flex";
+      this.modalOpen = true;
+    });
+
+    this.elements.closeAboutButton.addEventListener("click", () => {
+      this.elements.aboutModal.style.display = "none";
+      this.modalOpen = false;
+    });
   }
 
   /**
@@ -218,7 +249,7 @@ class UIManager {
     this.elements.menuButtons.forEach((button) => {
       button.addEventListener("click", () => {
         const screenId = button.getAttribute("data-screen");
-        this._switchScreen(screenId);
+        this.showScreen(screenId);
       });
     });
   }
@@ -1824,16 +1855,14 @@ class UIManager {
             </div>
         `;
 
-    // Add to document body
-    document.body.appendChild(gameOverModal);
-
     // Add new game button handler
     const newGameButton = gameOverModal.querySelector("#new-game-button");
     newGameButton.addEventListener("click", () => {
-      document.body.removeChild(gameOverModal);
-      this.modalOpen = false;
       this.showStartGameModal();
     });
+
+    // Add to document body
+    document.body.appendChild(gameOverModal);
 
     this.modalOpen = true;
   }

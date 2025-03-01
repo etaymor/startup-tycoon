@@ -49,6 +49,23 @@ body {
   text-shadow: 0 0 5px rgba(51, 255, 51, 0.7);
 }
 
+.about-link {
+  color: #33ff33;
+  text-decoration: none;
+  padding: 5px 10px;
+  border: 1px solid #33ff33;
+  border-radius: 3px;
+  margin-left: 15px;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.about-link:hover {
+  background-color: #33ff33;
+  color: #121212;
+  box-shadow: 0 0 5px rgba(51, 255, 51, 0.7);
+}
+
 .game-stats {
   display: flex;
   gap: 15px;
@@ -288,11 +305,34 @@ label {
   width: 90%;
   max-width: 500px;
   box-shadow: 0 0 20px rgba(51, 255, 51, 0.7);
+  text-align: center;
+}
+
+.modal-content p {
+  margin: 15px 0;
+  line-height: 1.5;
+}
+
+.modal-content a {
+  color: #33ff33;
+  text-decoration: none;
+  border-bottom: 1px solid #33ff33;
+  transition: all 0.2s;
+}
+
+.modal-content a:hover {
+  color: #fff;
+  border-bottom-color: #fff;
+  text-shadow: 0 0 5px rgba(51, 255, 51, 0.7);
 }
 
 .modal h2 {
   margin-bottom: 20px;
   text-align: center;
+}
+
+.modal button {
+  margin-top: 15px;
 }
 
 /* Responsive Adjustments */
