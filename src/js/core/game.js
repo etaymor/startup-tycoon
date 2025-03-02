@@ -268,8 +268,9 @@ class Game {
   /**
    * End the game with the given reason
    * @param {string} reason - The reason for game over
+   * @param {Object} data - Additional data for the game over screen
    */
-  gameOver(reason) {
+  gameOver(reason, data = {}) {
     this.state.gameOver = true;
     this.state.gameOverReason = reason;
     this.isRunning = false;
@@ -277,7 +278,7 @@ class Game {
     console.log("Game over:", reason);
 
     // Display game over screen
-    this.uiManager.showGameOver(reason);
+    this.uiManager.showGameOver(reason, data);
 
     return this;
   }
@@ -379,6 +380,14 @@ class Game {
 
     // Apply to event system
     this.eventSystem.eventFrequency *= difficultyConfig.eventFrequency;
+
+    // Initialize dynamic difficulty tracking
+    this.dynamicDifficulty = {
+      lastAdjustmentTurn: 1,
+      adjustmentFrequency: 6, // Adjust every 6 turns
+      performanceMetrics: [],
+      difficultyMultiplier: 1.0,
+    };
   }
 
   /**
@@ -435,5 +444,318 @@ class Game {
     const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
 
     return `${prefix}${suffix}`;
+  }
+
+  /**
+   * Update dynamic difficulty based on player performance
+   * Called at the end of each turn
+   * @private
+   */
+  _updateDynamicDifficulty() {
+    // Only adjust difficulty periodically
+    if (
+      this.state.currentTurn % this.dynamicDifficulty.adjustmentFrequency !==
+      0
+    ) {
+      return;
+    }
+
+    // Calculate performance metrics
+    const company = this.company;
+    const currentTurn = this.state.currentTurn;
+
+    // Calculate expected progress based on turn number
+    // These are rough benchmarks for a balanced game
+    const expectedValuation = 1000000 * Math.pow(1.15, currentTurn / 12); // ~15% growth per year
+    const expectedUsers = 100 * Math.pow(1.2, currentTurn / 12); // ~20% growth per year
+    const expectedRevenue = 5000 * Math.pow(1.18, currentTurn / 12); // ~18% growth per year
+
+    // Calculate how much player is exceeding expectations
+    const valuationRatio = company.valuation / expectedValuation;
+    const usersRatio = company.users / expectedUsers;
+    const revenueRatio = company.revenue / expectedRevenue;
+
+    // Overall performance score (higher means player is doing better than expected)
+    const performanceScore = (valuationRatio + usersRatio + revenueRatio) / 3;
+
+    // Store performance metrics for tracking
+    this.dynamicDifficulty.performanceMetrics.push({
+      turn: currentTurn,
+      performanceScore,
+      valuationRatio,
+      usersRatio,
+      revenueRatio,
+    });
+
+    // Keep only the last 5 performance metrics
+    if (this.dynamicDifficulty.performanceMetrics.length > 5) {
+      this.dynamicDifficulty.performanceMetrics.shift();
+    }
+
+    // Calculate average recent performance
+    const recentPerformance =
+      this.dynamicDifficulty.performanceMetrics.reduce(
+        (sum, metric) => sum + metric.performanceScore,
+        0
+      ) / this.dynamicDifficulty.performanceMetrics.length;
+
+    // Adjust difficulty based on performance
+    let newDifficultyMultiplier = this.dynamicDifficulty.difficultyMultiplier;
+
+    if (recentPerformance > 1.5) {
+      // Player is doing much better than expected - increase difficulty significantly
+      newDifficultyMultiplier += 0.15;
+    } else if (recentPerformance > 1.2) {
+      // Player is doing better than expected - increase difficulty moderately
+      newDifficultyMultiplier += 0.08;
+    } else if (recentPerformance < 0.6) {
+      // Player is struggling - decrease difficulty
+      newDifficultyMultiplier -= 0.1;
+    } else if (recentPerformance < 0.8) {
+      // Player is doing worse than expected - decrease difficulty slightly
+      newDifficultyMultiplier -= 0.05;
+    }
+
+    // Clamp difficulty multiplier to reasonable range
+    newDifficultyMultiplier = Math.max(
+      0.7,
+      Math.min(1.5, newDifficultyMultiplier)
+    );
+
+    // Only log if difficulty actually changed
+    if (
+      newDifficultyMultiplier !== this.dynamicDifficulty.difficultyMultiplier
+    ) {
+      console.log(`Dynamic difficulty adjustment at turn ${currentTurn}:`, {
+        previousMultiplier: this.dynamicDifficulty.difficultyMultiplier,
+        newMultiplier: newDifficultyMultiplier,
+        performanceScore: recentPerformance,
+        valuationRatio,
+        usersRatio,
+        revenueRatio,
+      });
+
+      // Store the old multiplier to check for significant increases
+      const oldMultiplier = this.dynamicDifficulty.difficultyMultiplier;
+
+      // Apply the new difficulty multiplier
+      this.dynamicDifficulty.difficultyMultiplier = newDifficultyMultiplier;
+
+      // Apply difficulty changes to game systems
+      this._applyDynamicDifficultyEffects();
+
+      // If difficulty increased significantly, consider triggering a difficulty event
+      if (newDifficultyMultiplier > oldMultiplier + 0.1) {
+        // 40% chance of triggering an event when difficulty increases significantly
+        if (Math.random() < 0.4) {
+          this._triggerDifficultyEvent();
+        }
+      }
+    }
+
+    this.dynamicDifficulty.lastAdjustmentTurn = currentTurn;
+  }
+
+  /**
+   * Apply dynamic difficulty effects to various game systems
+   * @private
+   */
+  _applyDynamicDifficultyEffects() {
+    const multiplier = this.dynamicDifficulty.difficultyMultiplier;
+
+    // Apply to market conditions
+    this.market.valuationMultiplier *= 1 / multiplier;
+
+    // Apply to competitors
+    this.competitors.forEach((competitor) => {
+      // Make competitors more aggressive as difficulty increases
+      competitor.aggressiveness *= multiplier;
+
+      // Boost competitor product quality
+      if (multiplier > 1.0) {
+        competitor.product.quality = Math.min(
+          1.0,
+          competitor.product.quality * (1 + (multiplier - 1) * 0.5)
+        );
+      }
+    });
+
+    // Apply to churn rate
+    this.company.churnRate = Math.max(
+      0.05,
+      this.company.churnRate * multiplier
+    );
+
+    // Apply to product quality decay
+    // Higher difficulty means faster quality decay
+    const baseDecay = CONFIG.PRODUCT_QUALITY_DECAY;
+
+    // Apply to operational costs
+    // Higher difficulty means higher costs
+    const operationalCostMultiplier = 1 + (multiplier - 1) * 0.5;
+
+    // Add a random negative event if difficulty increased significantly
+    if (multiplier > 1.2) {
+      this._triggerDifficultyEvent();
+    }
+  }
+
+  /**
+   * Trigger a random negative event due to increased difficulty
+   * @private
+   */
+  _triggerDifficultyEvent() {
+    // Define possible negative events
+    const negativeEvents = [
+      {
+        id: "employee_poaching",
+        title: "Employee Poached",
+        type: "internal",
+        description:
+          "A competitor has poached one of your employees with a better offer.",
+        effects: {
+          special: "employee_poached",
+        },
+      },
+      {
+        id: "market_downturn",
+        title: "Market Downturn",
+        type: "market",
+        description:
+          "Economic conditions have worsened, affecting your industry.",
+        effects: {
+          company: {
+            valuationMultiplier: 0.85, // 15% valuation drop
+          },
+          market: {
+            growthMultiplier: 0.8, // 20% slower growth
+          },
+        },
+      },
+      {
+        id: "increased_competition",
+        title: "Increased Competition",
+        type: "competitor",
+        description: "A new well-funded competitor has entered your market.",
+        effects: {
+          special: "new_competitor",
+        },
+      },
+      {
+        id: "cost_increase",
+        title: "Rising Costs",
+        type: "internal",
+        description:
+          "Operational costs have increased due to market conditions.",
+        effects: {
+          special: "cost_increase",
+        },
+      },
+    ];
+
+    // Select a random event
+    const randomEvent =
+      negativeEvents[Math.floor(Math.random() * negativeEvents.length)];
+
+    // Process the special effects
+    if (randomEvent.effects.special) {
+      switch (randomEvent.effects.special) {
+        case "employee_poached":
+          this._handleEmployeePoaching();
+          break;
+        case "new_competitor":
+          this._handleNewCompetitor();
+          break;
+        case "cost_increase":
+          this._handleCostIncrease();
+          break;
+      }
+    }
+
+    // Add the event to game state
+    this.state.events.push({
+      ...randomEvent,
+      turn: this.state.currentTurn,
+    });
+
+    // Show the event to the player
+    this.uiManager.showEventModal(randomEvent);
+  }
+
+  /**
+   * Handle employee poaching event
+   * @private
+   */
+  _handleEmployeePoaching() {
+    const company = this.company;
+
+    // Only poach if company has more than 2 employees
+    if (company.team.employees.length <= 2) {
+      return;
+    }
+
+    // Find non-founder employees
+    const poachableEmployees = company.team.employees.filter(
+      (emp) => emp.role !== "founder"
+    );
+
+    if (poachableEmployees.length === 0) {
+      return;
+    }
+
+    // Select a random employee to poach
+    const employeeIndex = Math.floor(Math.random() * poachableEmployees.length);
+    const employee = poachableEmployees[employeeIndex];
+
+    // Remove the employee
+    company.fireEmployee(employee.id);
+
+    // Decrease team morale
+    company.team.morale = Math.max(0.3, company.team.morale - 0.15);
+
+    // Add notification
+    this.addNotification(
+      `${employee.name} (${employee.role}) has been poached by a competitor!`,
+      "negative"
+    );
+  }
+
+  /**
+   * Handle new competitor event
+   * @private
+   */
+  _handleNewCompetitor() {
+    // Add a new aggressive competitor
+    const newCompetitor = new AICompetitor({
+      game: this,
+      type: "aggressive",
+      industry: this.company.industry,
+      startingCash: this.company.cash * 1.2, // Well-funded competitor
+      startingUsers: this.company.users * 0.5, // Half your user base
+      productQuality: this.company.product.quality * 0.9, // Slightly lower quality
+    });
+
+    this.competitors.push(newCompetitor);
+
+    // Add notification
+    this.addNotification(
+      `A new well-funded competitor "${newCompetitor.name}" has entered your market!`,
+      "negative"
+    );
+  }
+
+  /**
+   * Handle cost increase event
+   * @private
+   */
+  _handleCostIncrease() {
+    // Increase operational costs by 15-30%
+    const increasePercent = 15 + Math.floor(Math.random() * 15);
+
+    // Add notification
+    this.addNotification(
+      `Operational costs have increased by ${increasePercent}% due to market conditions!`,
+      "negative"
+    );
   }
 }

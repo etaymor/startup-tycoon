@@ -142,5 +142,81 @@ document.addEventListener("DOMContentLoaded", () => {
     window.open(shareUrl, "_blank", "width=550,height=420");
   });
 
+  // Debug mode handling
+  const debugMode = window.location.search.includes("debug=true");
+  if (debugMode) {
+    console.log("Debug mode enabled");
+    const debugControls = document.getElementById("debug-controls");
+    if (debugControls) {
+      debugControls.style.display = "block";
+
+      // Add debug button handlers
+      const addCashButton = document.getElementById("debug-add-cash");
+      addCashButton.addEventListener("click", () => {
+        if (game && game.isInitialized) {
+          game.company.cash += 1000000; // Add $1M
+          game.uiManager.updateUI();
+          console.log("Added $1M cash");
+        }
+      });
+
+      const addUsersButton = document.getElementById("debug-add-users");
+      addUsersButton.addEventListener("click", () => {
+        if (game && game.isInitialized) {
+          game.company.users += 10000; // Add 10K users
+          game.uiManager.updateUI();
+          console.log("Added 10K users");
+        }
+      });
+
+      const triggerEventButton = document.getElementById("debug-trigger-event");
+      triggerEventButton.addEventListener("click", () => {
+        if (game && game.isInitialized) {
+          game.eventSystem.triggerRandomEvent();
+          console.log("Triggered random event");
+        }
+      });
+
+      const advanceTurnButton = document.getElementById("debug-advance-turn");
+      advanceTurnButton.addEventListener("click", () => {
+        if (game && game.isInitialized) {
+          game.endTurn();
+          console.log("Advanced turn");
+        }
+      });
+
+      const gameOverButton = document.getElementById("debug-game-over");
+      gameOverButton.addEventListener("click", () => {
+        if (game && game.isInitialized) {
+          // Test different game over scenarios
+          const scenarios = [
+            "bankruptcy",
+            "acquisition",
+            "ipo",
+            "max_turns_reached",
+          ];
+          const randomScenario =
+            scenarios[Math.floor(Math.random() * scenarios.length)];
+
+          let data = {};
+          if (randomScenario === "acquisition") {
+            data = {
+              acquisitionValue: game.company.valuation * 1.5,
+              playerPayout: game.company.valuation * 0.8,
+            };
+          } else if (randomScenario === "ipo") {
+            data = {
+              ipoValue: game.company.valuation * 2,
+              playerPayout: game.company.valuation * 1.2,
+            };
+          }
+
+          game.gameOver(randomScenario, data);
+          console.log(`Triggered game over: ${randomScenario}`);
+        }
+      });
+    }
+  }
+
   console.log("Startup Tycoon initialized!");
 });

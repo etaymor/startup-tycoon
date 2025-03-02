@@ -52,7 +52,7 @@ class Company {
     // Users and growth
     this.users = 0;
     this.growthRate = 0;
-    this.churnRate = 0.05; // 5% monthly churn
+    this.churnRate = 0.08; // Increased from 0.05 - 8% monthly churn
 
     // Initialize marketing channels with zero budget
     CONFIG.MARKETING_CHANNELS.forEach((channel) => {
@@ -71,6 +71,16 @@ class Company {
    * Update company state for the current turn
    */
   update() {
+    // Store initial cash for logging
+    const initialCash = this.cash;
+
+    // Store current marketing budgets to reapply them after the update
+    const currentMarketingBudgets = {};
+    Object.keys(this.marketing.channels).forEach((channelId) => {
+      currentMarketingBudgets[channelId] =
+        this.marketing.channels[channelId].budget;
+    });
+
     // Calculate basic financial metrics
     this._calculateFinancials();
 
@@ -86,11 +96,40 @@ class Company {
     // Update market position
     this._updateMarketPosition();
 
+    // Add revenue to cash
+    this.cash += this.revenue;
+
+    // Subtract recurring costs (not including one-time marketing expenses which are deducted when allocated)
+    // NOTE: Marketing expenses are already deducted when allocated in allocateMarketingBudget()
+    // so we exclude them here to avoid double-counting
+    const recurringCosts = this.costs - this.marketing.budget;
+    this.cash -= recurringCosts;
+
+    // Log cash changes for debugging
+    console.log(`Cash update - Turn ${this.game.state.currentTurn}:`);
+    console.log(`  Initial cash: $${initialCash.toLocaleString()}`);
+    console.log(`  Revenue: +$${this.revenue.toLocaleString()}`);
+    console.log(`  Recurring costs: -$${recurringCosts.toLocaleString()}`);
+    console.log(`  Final cash: $${this.cash.toLocaleString()}`);
+    console.log(`  Burn rate: $${this.burnRate.toLocaleString()}/month`);
+
     // Check for bankruptcy
     this._checkBankruptcy();
 
     // Check for other end game conditions
     this._checkEndGameConditions();
+
+    // Reapply marketing budgets for the next turn
+    Object.keys(currentMarketingBudgets).forEach((channelId) => {
+      const previousBudget = currentMarketingBudgets[channelId];
+      if (previousBudget > 0) {
+        // Only allocate if we have enough cash
+        const budgetToAllocate = Math.min(previousBudget, this.cash);
+        if (budgetToAllocate > 0) {
+          this.allocateMarketingBudget(channelId, budgetToAllocate);
+        }
+      }
+    });
 
     return this;
   }
@@ -118,6 +157,9 @@ class Company {
     );
 
     // Update cash immediately to reflect the allocation
+    // NOTE: Marketing expenses are one-time costs deducted immediately
+    // They are included in this.costs for display purposes but excluded from recurring costs
+    // when calculating monthly expenses in the update() method
     this.cash -= amount;
 
     return true;
@@ -179,25 +221,203 @@ class Company {
   }
 
   /**
+   * Generate a random feature name based on industry and complexity
+   * @param {string} complexity - Feature complexity (simple, medium, complex)
+   * @param {number} [recursionDepth=0] - Track recursion depth to prevent infinite loops
+   * @returns {string} Random feature name
+   * @private
+   */
+  _generateFeatureName(complexity, recursionDepth = 0) {
+    // Prevent infinite recursion by limiting depth
+    if (recursionDepth > 5) {
+      // If we've gone too deep, just return any feature without checking dependencies
+      const industryFeatures =
+        CONFIG.FEATURE_NAMES[this.industry] || CONFIG.FEATURE_NAMES.saas;
+      const complexityFeatures =
+        industryFeatures[complexity] || industryFeatures.medium;
+
+      return complexityFeatures[
+        Math.floor(Math.random() * complexityFeatures.length)
+      ];
+    }
+
+    // Get feature names for this industry and complexity
+    const industryFeatures =
+      CONFIG.FEATURE_NAMES[this.industry] || CONFIG.FEATURE_NAMES.saas;
+    const complexityFeatures =
+      industryFeatures[complexity] || industryFeatures.medium;
+
+    // Get completed feature names
+    const completedFeatureNames = this.product.features
+      .filter((f) => f.completed)
+      .map((f) => f.name);
+
+    // Get available features (those with dependencies met)
+    const availableFeatures = complexityFeatures.filter((featureName) => {
+      // Get metadata for this feature
+      const metadata = CONFIG.FEATURE_METADATA[this.industry]?.[featureName];
+      if (!metadata) return true; // If no metadata, assume no dependencies
+
+      // Check if all dependencies are completed
+      return metadata.dependencies.every((dep) =>
+        completedFeatureNames.includes(dep)
+      );
+    });
+
+    // If no available features, fall back to any feature from this complexity
+    if (availableFeatures.length === 0) {
+      return complexityFeatures[
+        Math.floor(Math.random() * complexityFeatures.length)
+      ];
+    }
+
+    // Select a random feature from available ones
+    return availableFeatures[
+      Math.floor(Math.random() * availableFeatures.length)
+    ];
+  }
+
+  /**
+   * Get feature metadata including category and dependencies
+   * @param {string} featureName - The name of the feature
+   * @returns {Object} Feature metadata
+   * @private
+   */
+  _getFeatureMetadata(featureName) {
+    const metadata = CONFIG.FEATURE_METADATA[this.industry]?.[featureName];
+    if (!metadata) {
+      // Default metadata if not found
+      return {
+        category: "core",
+        dependencies: [],
+      };
+    }
+    return metadata;
+  }
+
+  /**
+   * Check if all dependencies for a feature are met
+   * @param {string} featureName - The name of the feature to check
+   * @returns {Object} Result with status and missing dependencies
+   * @private
+   */
+  _checkFeatureDependencies(featureName) {
+    const metadata = this._getFeatureMetadata(featureName);
+    const completedFeatureNames = this.product.features
+      .filter((f) => f.completed)
+      .map((f) => f.name);
+
+    const missingDependencies = metadata.dependencies.filter(
+      (dep) => !completedFeatureNames.includes(dep)
+    );
+
+    return {
+      met: missingDependencies.length === 0,
+      missing: missingDependencies,
+    };
+  }
+
+  /**
+   * Get the category information for a feature
+   * @param {string} featureName - The name of the feature
+   * @returns {Object} Category information
+   * @private
+   */
+  _getFeatureCategory(featureName) {
+    const metadata = this._getFeatureMetadata(featureName);
+    const categoryId = metadata.category;
+
+    // Find the category in the industry's categories
+    const categories = CONFIG.FEATURE_CATEGORIES[this.industry] || [];
+    const category = categories.find((c) => c.id === categoryId) || {
+      id: categoryId,
+      name: categoryId.charAt(0).toUpperCase() + categoryId.slice(1),
+      description: "Features in this category",
+    };
+
+    return category;
+  }
+
+  /**
    * Start developing a new product feature
    * @param {Object} featureData - Feature details
+   * @param {number} [recursionDepth=0] - Track recursion depth to prevent infinite loops
    */
-  developFeature(featureData) {
+  developFeature(featureData, recursionDepth = 0) {
+    // Prevent infinite recursion
+    if (recursionDepth > 5) {
+      // If we've gone too deep, force a feature without dependency checks
+      const complexity = featureData.complexity || "medium";
+      const industryFeatures =
+        CONFIG.FEATURE_NAMES[this.industry] || CONFIG.FEATURE_NAMES.saas;
+      const complexityFeatures =
+        industryFeatures[complexity] || industryFeatures.medium;
+      const name =
+        complexityFeatures[
+          Math.floor(Math.random() * complexityFeatures.length)
+        ];
+      const description = this._generateFeatureDescription(name, complexity);
+
+      // Get feature metadata
+      const metadata = this._getFeatureMetadata(name);
+      const category = this._getFeatureCategory(name);
+
+      const feature = {
+        id: Date.now(),
+        name: name,
+        description: description,
+        complexity: complexity,
+        category: category.id,
+        categoryName: category.name,
+        dependencies: metadata.dependencies,
+        cost: CONFIG.FEATURE_COMPLEXITY_LEVELS[complexity].cost,
+        timeRequired: CONFIG.FEATURE_COMPLEXITY_LEVELS[complexity].time,
+        progress: 0,
+        completed: false,
+        impact: CONFIG.FEATURE_COMPLEXITY_LEVELS[complexity].impact,
+        startedAt: this.game.state.currentTurn,
+      };
+
+      // Add to features list
+      this.product.features.push(feature);
+
+      // Deduct immediate cost
+      this.cash -= feature.cost;
+
+      return feature;
+    }
+
+    const complexity = featureData.complexity || "medium";
+    const name =
+      featureData.name || this._generateFeatureName(complexity, recursionDepth);
+    const description =
+      featureData.description ||
+      this._generateFeatureDescription(name, complexity);
+
+    // Get feature metadata
+    const metadata = this._getFeatureMetadata(name);
+    const category = this._getFeatureCategory(name);
+
+    // Check dependencies
+    const dependencyCheck = this._checkFeatureDependencies(name);
+    if (!dependencyCheck.met && !featureData.name) {
+      // If auto-generating a name and dependencies aren't met, try again with increased recursion depth
+      return this.developFeature(featureData, recursionDepth + 1);
+    }
+
     const feature = {
       id: Date.now(),
-      name: featureData.name,
-      description: featureData.description,
-      complexity: featureData.complexity || "medium",
-      cost: CONFIG.FEATURE_COMPLEXITY_LEVELS[featureData.complexity || "medium"]
-        .cost,
-      timeRequired:
-        CONFIG.FEATURE_COMPLEXITY_LEVELS[featureData.complexity || "medium"]
-          .time,
+      name: name,
+      description: description,
+      complexity: complexity,
+      category: category.id,
+      categoryName: category.name,
+      dependencies: metadata.dependencies,
+      cost: CONFIG.FEATURE_COMPLEXITY_LEVELS[complexity].cost,
+      timeRequired: CONFIG.FEATURE_COMPLEXITY_LEVELS[complexity].time,
       progress: 0,
       completed: false,
-      impact:
-        CONFIG.FEATURE_COMPLEXITY_LEVELS[featureData.complexity || "medium"]
-          .impact,
+      impact: CONFIG.FEATURE_COMPLEXITY_LEVELS[complexity].impact,
       startedAt: this.game.state.currentTurn,
     };
 
@@ -208,6 +428,43 @@ class Company {
     this.cash -= feature.cost;
 
     return feature;
+  }
+
+  /**
+   * Generate a feature description based on its name and complexity
+   * @param {string} name - Feature name
+   * @param {string} complexity - Feature complexity
+   * @returns {string} Feature description
+   * @private
+   */
+  _generateFeatureDescription(name, complexity) {
+    const complexityDescriptions = {
+      simple: ["Basic", "Simple", "Fundamental", "Essential"],
+      medium: ["Enhanced", "Advanced", "Comprehensive", "Robust"],
+      complex: [
+        "Premium",
+        "Enterprise-grade",
+        "Cutting-edge",
+        "State-of-the-art",
+      ],
+    };
+
+    const adjective =
+      complexityDescriptions[complexity][
+        Math.floor(Math.random() * complexityDescriptions[complexity].length)
+      ];
+
+    return `${adjective} ${name.toLowerCase()} feature for your ${this._getIndustryName()} product.`;
+  }
+
+  /**
+   * Get a human-readable name for the company's industry
+   * @returns {string} Industry name
+   * @private
+   */
+  _getIndustryName() {
+    const industry = CONFIG.INDUSTRIES.find((ind) => ind.id === this.industry);
+    return industry ? industry.name : this.industry;
   }
 
   /**
@@ -261,14 +518,22 @@ class Company {
       };
     }
 
+    // Get company size tier for scaling
+    const sizeTier = this._getCompanySizeTier();
+
     // Calculate valuation for this round (with some randomness)
     const valuationMultiple = 1 + (Math.random() * 0.4 - 0.2); // +/- 20%
     const roundValuation = this.valuation * valuationMultiple;
 
     // Calculate equity given for the investment
+    // For larger companies, reduce equity percentage
     const [minEquity, maxEquity] = roundConfig.equityRange;
+    const equityScaleFactor = Math.max(0.5, 1 - (sizeTier.tier - 1) * 0.1); // Reduce equity as company grows
+    const scaledMinEquity = minEquity * equityScaleFactor;
+    const scaledMaxEquity = maxEquity * equityScaleFactor;
+
     const equityPercentage =
-      minEquity + Math.random() * (maxEquity - minEquity);
+      scaledMinEquity + Math.random() * (scaledMaxEquity - scaledMinEquity);
     const equityAmount = equityPercentage;
 
     // Calculate actual investment amount
@@ -425,13 +690,13 @@ class Company {
     }, 0);
 
     // Calculate operational costs (base + per employee)
-    const operationalCosts = 5000 + this.team.employees.length * 1000;
+    const operationalCosts = 8000 + this.team.employees.length * 1500;
 
     // Sum up total costs
     this.costs = employeeCosts + operationalCosts + this.marketing.budget;
 
     // Calculate burn rate (monthly cash flow)
-    // Only count recurring costs, not one-time marketing expenses
+    // Only count recurring costs, not one-time marketing expenses which are deducted when allocated
     const recurringCosts = employeeCosts + operationalCosts;
 
     // Burn rate is revenue minus recurring costs
@@ -546,17 +811,76 @@ class Company {
       );
 
       if (channel.budget > 0 && channelConfig) {
-        // Calculate user acquisition for this channel
+        // Add randomization factor to marketing efficiency (±20%)
+        const randomFactor = 0.8 + Math.random() * 0.4;
+
+        // Calculate saturation effect - efficiency decreases as market matures
+        // The longer the game runs, the less effective marketing becomes
+        const marketSaturation = Math.max(
+          0.5,
+          1 - (this.game.state.currentTurn / 100) * 0.5
+        );
+
+        // Calculate channel-specific saturation based on continuous use
+        // If the channel has been used continuously, its effectiveness decreases
+        if (!channel.usageHistory) {
+          channel.usageHistory = [];
+        }
+
+        // Track usage of this channel (1 = used this turn)
+        channel.usageHistory.push(1);
+
+        // Keep only the last 10 turns of history
+        if (channel.usageHistory.length > 10) {
+          channel.usageHistory.shift();
+        }
+
+        // Calculate channel-specific saturation based on recent usage
+        const recentUsageSum = channel.usageHistory.reduce(
+          (sum, val) => sum + val,
+          0
+        );
+        const channelSaturation = Math.max(0.6, 1 - recentUsageSum / 20);
+
+        // Calculate user acquisition for this channel with all factors
         const efficiency =
-          channel.efficiency * this.marketing.brand * this.product.quality;
+          channel.efficiency *
+          this.marketing.brand *
+          this.product.quality *
+          0.8 * // Base reduction factor
+          randomFactor *
+          marketSaturation *
+          channelSaturation;
+
         const acquisitions = Math.floor(
           (channel.budget / channelConfig.costPerUser) * efficiency
         );
 
         channel.acquisitions = acquisitions;
         newUsers += acquisitions;
+
+        // Log marketing effectiveness factors for debugging
+        console.log(`Marketing channel ${channelId} effectiveness:`, {
+          baseEfficiency: channel.efficiency,
+          brandFactor: this.marketing.brand,
+          productQuality: this.product.quality,
+          randomFactor: randomFactor.toFixed(2),
+          marketSaturation: marketSaturation.toFixed(2),
+          channelSaturation: channelSaturation.toFixed(2),
+          finalEfficiency: efficiency.toFixed(2),
+          budget: channel.budget,
+          acquisitions: acquisitions,
+        });
       } else {
         channel.acquisitions = 0;
+
+        // If channel wasn't used this turn, track it and allow recovery of effectiveness
+        if (channel.usageHistory) {
+          channel.usageHistory.push(0);
+          if (channel.usageHistory.length > 10) {
+            channel.usageHistory.shift();
+          }
+        }
       }
     });
 
@@ -604,7 +928,7 @@ class Company {
    * @private
    */
   _checkBankruptcy() {
-    if (this.cash <= CONFIG.BANKRUPTCY_THRESHOLD) {
+    if (this.cash <= CONFIG.BANKRUPTCY_THRESHOLD && this.burnRate < 0) {
       this.game.gameOver("bankruptcy");
     }
 
@@ -616,12 +940,6 @@ class Company {
    * @private
    */
   _checkEndGameConditions() {
-    // Check for bankruptcy
-    if (this.cash <= 0 && this.burnRate < 0) {
-      this.game.gameOver("bankruptcy");
-      // This will be handled by the UI
-    }
-
     // Check for potential acquisition
     if (this.valuation >= CONFIG.ACQUISITION_VALUATION_THRESHOLD) {
       // Only make acquisition offers occasionally, so it doesn't happen every turn once threshold is reached
@@ -670,21 +988,34 @@ class Company {
 
   /**
    * Generate a random employee name
+   * @returns {string} Random employee name
    * @private
    */
   _generateEmployeeName() {
     const firstNames = [
       "Alex",
-      "Sam",
       "Jordan",
       "Taylor",
+      "Morgan",
       "Casey",
       "Riley",
-      "Quinn",
       "Avery",
-      "Morgan",
-      "Drew",
+      "Quinn",
+      "Skyler",
+      "Reese",
+      "Finley",
+      "River",
+      "Emerson",
+      "Rowan",
+      "Dakota",
+      "Hayden",
+      "Alexis",
+      "Jamie",
+      "Charlie",
+      "Jessie",
+      "Peyton",
     ];
+
     const lastNames = [
       "Smith",
       "Johnson",
@@ -694,8 +1025,19 @@ class Company {
       "Davis",
       "Miller",
       "Wilson",
-      "Lee",
-      "Chen",
+      "Moore",
+      "Taylor",
+      "Anderson",
+      "Thomas",
+      "Jackson",
+      "White",
+      "Harris",
+      "Martin",
+      "Thompson",
+      "Garcia",
+      "Martinez",
+      "Robinson",
+      "Clark",
     ];
 
     const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
@@ -768,5 +1110,45 @@ class Company {
 
       return `${prefix} ${suffix}`;
     }
+  }
+
+  /**
+   * Get the company size tier based on metrics
+   * @returns {Object} Size tier with scaling factors
+   * @private
+   */
+  _getCompanySizeTier() {
+    // Define tiers based on company valuation
+    let valuationTier = 1;
+    if (this.valuation >= 1000000000) valuationTier = 6; // $1B+
+    else if (this.valuation >= 500000000) valuationTier = 5; // $500M+
+    else if (this.valuation >= 100000000) valuationTier = 4; // $100M+
+    else if (this.valuation >= 50000000) valuationTier = 3; // $50M+
+    else if (this.valuation >= 10000000) valuationTier = 2; // $10M+
+
+    // Define tiers based on users
+    let usersTier = 1;
+    if (this.users >= 10000000) usersTier = 6; // 10M+ users
+    else if (this.users >= 1000000) usersTier = 5; // 1M+ users
+    else if (this.users >= 100000) usersTier = 4; // 100K+ users
+    else if (this.users >= 10000) usersTier = 3; // 10K+ users
+    else if (this.users >= 1000) usersTier = 2; // 1K+ users
+
+    // Define tiers based on revenue
+    let revenueTier = 1;
+    if (this.revenue * 12 >= 100000000)
+      revenueTier = 6; // $100M+ annual revenue
+    else if (this.revenue * 12 >= 50000000)
+      revenueTier = 5; // $50M+ annual revenue
+    else if (this.revenue * 12 >= 10000000)
+      revenueTier = 4; // $10M+ annual revenue
+    else if (this.revenue * 12 >= 1000000)
+      revenueTier = 3; // $1M+ annual revenue
+    else if (this.revenue * 12 >= 100000) revenueTier = 2; // $100K+ annual revenue
+
+    // Use the highest tier from all metrics
+    const tier = Math.max(valuationTier, usersTier, revenueTier);
+
+    return { tier };
   }
 }

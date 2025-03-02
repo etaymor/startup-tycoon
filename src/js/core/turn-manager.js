@@ -86,6 +86,9 @@ class TurnManager {
     // Increment turn counter AFTER all phases are complete AND summary is shown
     this.game.state.currentTurn++;
 
+    // Update dynamic difficulty based on player performance
+    this.game._updateDynamicDifficulty();
+
     // Check if we've reached the maximum number of turns
     if (this.game.state.currentTurn > this.maxTurns) {
       this.game.gameOver("max_turns_reached");

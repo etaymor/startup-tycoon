@@ -165,35 +165,85 @@ class EventSystem {
             },
           },
           {
-            text: "Stay the course and weather the storm",
+            text: "Maintain course and weather the storm",
             effects: {
-              company: { cashMultiplier: 0.9 },
+              company: { cash: -30000 },
             },
           },
         ],
       },
       {
-        id: "interest_rate_hike",
-        title: "Interest Rate Hike",
+        id: "market_expansion_opportunity",
+        title: "Market Expansion Opportunity",
         description:
-          "The central bank has increased interest rates significantly, affecting startup funding.",
-        type: "negative",
+          "A new international market is opening up for your product. Expanding would require significant investment but could greatly increase your user base.",
+        type: "opportunity",
+        minValuation: 10000000, // Only for companies valued at $10M+
+        minUsers: 10000, // Only for companies with 10K+ users
         choices: [
           {
-            text: "Focus on profitability to reduce reliance on funding",
+            text: "Invest heavily in international expansion",
             effects: {
-              company: { users: -100, revenue: 5000 },
+              company: {
+                cash: -500000,
+                users: 5000,
+                valuation: 2000000,
+              },
             },
           },
           {
-            text: "Accelerate growth to secure funding before conditions worsen",
+            text: "Test the market with a smaller investment",
             effects: {
-              company: { cash: -50000, users: 500 },
+              company: {
+                cash: -200000,
+                users: 2000,
+              },
             },
-            chainEvent: {
-              eventId: "desperate_for_funding",
-              delay: 3,
-              probability: 0.8,
+          },
+          {
+            text: "Focus on domestic growth for now",
+            effects: {
+              company: {
+                teamMorale: 0.05,
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "major_platform_change",
+        title: "Major Platform Change",
+        description:
+          "A platform your product heavily relies on has announced significant API changes that will affect your service. Adapting will require substantial development resources.",
+        type: "negative",
+        minValuation: 5000000, // Only for companies valued at $5M+
+        choices: [
+          {
+            text: "Allocate significant resources to adapt quickly",
+            effects: {
+              company: {
+                cash: -300000,
+                productQuality: 0.1,
+              },
+            },
+          },
+          {
+            text: "Gradually adapt while maintaining current features",
+            effects: {
+              company: {
+                cash: -150000,
+                users: -1000,
+                productQuality: 0.05,
+              },
+            },
+          },
+          {
+            text: "Minimize changes and focus on alternative platforms",
+            effects: {
+              company: {
+                users: -3000,
+                churnRate: 0.02,
+              },
             },
           },
         ],
@@ -206,727 +256,572 @@ class EventSystem {
         id: "new_competitor",
         title: "New Competitor",
         description:
-          "A new well-funded competitor has entered the market with a similar product.",
-        type: "neutral",
-        choices: [
-          {
-            text: "Increase marketing to maintain market share",
-            effects: {
-              company: { cash: -50000, users: 200 },
-            },
-          },
-          {
-            text: "Accelerate product development to stay ahead",
-            effects: {
-              company: { productQuality: 0.1 },
-            },
-          },
-          {
-            text: "Ignore them and stick to your strategy",
-            effects: {
-              company: { users: -50 },
-            },
-            chainEvent: {
-              eventId: "competitor_stealing_users",
-              delay: 2,
-              probability: 0.6,
-            },
-          },
-        ],
-      },
-      {
-        id: "competitor_acquires",
-        title: "Competitor Acquisition",
-        description:
-          "One of your competitors has been acquired by a major company, gaining significant resources.",
+          "A new competitor has entered the market with a similar product.",
         type: "negative",
         choices: [
           {
-            text: "Focus on differentiating your product",
+            text: "Accelerate product development",
             effects: {
-              company: { productQuality: 0.15, cash: -20000 },
+              company: { cash: -20000, productQuality: 0.1 },
             },
           },
           {
-            text: "Approach the acquirer about potential partnerships",
+            text: "Increase marketing to maintain market position",
             effects: {
-              company: { valuation: 100000 },
+              company: { cash: -15000, brand: 0.1 },
             },
-            chainEvent: {
-              eventId: "partnership_opportunity",
-              delay: 2,
-              probability: 0.5,
+          },
+          {
+            text: "Ignore them and focus on your own strategy",
+            effects: {
+              company: { teamMorale: 0.05 },
             },
           },
         ],
       },
 
-      // Add industry-specific competitor event for fintech
+      // Events for larger companies
       {
-        id: "fintech_regulation_change",
-        title: "New Fintech Regulations",
+        id: "major_competitor_merger",
+        title: "Major Competitor Merger",
         description:
-          "Regulatory bodies have announced stricter compliance requirements for fintech companies.",
+          "Two of your significant competitors have announced a merger, creating a formidable rival in the market.",
         type: "negative",
-        requiredIndustry: "fintech",
+        minValuation: 20000000, // Only for companies valued at $20M+
+        minUsers: 50000, // Only for companies with 50K+ users
         choices: [
           {
-            text: "Invest in compliance infrastructure",
-            effects: {
-              company: { cash: -100000, productQuality: 0.1 },
-            },
-          },
-          {
-            text: "Lobby against the regulations with other startups",
-            effects: {
-              company: { cash: -30000 },
-            },
-            chainEvent: {
-              eventId: "lobby_outcome",
-              delay: 3,
-              probability: 0.7,
-            },
-          },
-          {
-            text: "Ignore and hope for lax enforcement",
-            effects: {
-              company: {}, // No immediate effect
-            },
-            chainEvent: {
-              eventId: "regulatory_crackdown",
-              delay: 4,
-              probability: 0.8,
-            },
-          },
-        ],
-      },
-
-      // Add industry-specific competitor event for saas
-      {
-        id: "saas_platform_change",
-        title: "Major Platform API Changes",
-        description:
-          "A major platform your SaaS product integrates with has announced significant API changes.",
-        type: "negative",
-        requiredIndustry: "saas",
-        choices: [
-          {
-            text: "Prioritize updating integrations immediately",
-            effects: {
-              company: { cash: -50000, productQuality: 0.05 },
-            },
-          },
-          {
-            text: "Delay updates and focus on other features",
-            effects: {
-              company: {}, // No immediate effect
-            },
-            chainEvent: {
-              eventId: "integration_broken",
-              delay: 2,
-              probability: 0.7,
-            },
-          },
-        ],
-      },
-
-      // Add industry-specific competitor event for ecommerce
-      {
-        id: "ecommerce_logistics_disruption",
-        title: "Logistics Network Disruption",
-        description:
-          "A major shipping carrier your e-commerce business relies on is experiencing nationwide delays.",
-        type: "negative",
-        requiredIndustry: "ecommerce",
-        choices: [
-          {
-            text: "Switch to alternative, more expensive shipping options",
-            effects: {
-              company: { cash: -40000, churnRate: -0.01 },
-            },
-          },
-          {
-            text: "Wait it out and notify customers of potential delays",
-            effects: {
-              company: { churnRate: 0.03 },
-            },
-            chainEvent: {
-              eventId: "customer_complaints",
-              delay: 1,
-              probability: 0.8,
-            },
-          },
-        ],
-      },
-
-      // Add industry-specific competitor event for social
-      {
-        id: "social_platform_algorithm_change",
-        title: "Social Algorithm Update",
-        description:
-          "A major social platform has changed its algorithm, affecting how content from your app is distributed.",
-        type: "negative",
-        requiredIndustry: "social",
-        choices: [
-          {
-            text: "Adapt content strategy to the new algorithm",
-            effects: {
-              company: { cash: -30000, users: -100 },
-            },
-            chainEvent: {
-              eventId: "algorithm_mastery",
-              delay: 3,
-              probability: 0.6,
-            },
-          },
-          {
-            text: "Focus on direct user engagement to reduce platform dependency",
-            effects: {
-              company: { users: -300, churnRate: -0.02 },
-            },
-          },
-        ],
-      },
-    ];
-
-    // Chain events (only triggered as follow-ups to other events)
-    this.eventPool.chain = [
-      {
-        id: "team_morale_crisis",
-        title: "Team Morale Crisis",
-        description:
-          "After recent cost-cutting measures, team morale has hit a critical low point. Several employees are considering leaving.",
-        type: "negative",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Hold team building activities and improve work environment",
-            effects: {
-              company: { cash: -20000, teamMorale: 0.3 },
-            },
-          },
-          {
-            text: "Offer small bonuses to key team members",
-            effects: {
-              company: { cash: -30000, teamMorale: 0.2 },
-            },
-          },
-          {
-            text: "Let them go and hire new talent",
-            effects: {
-              company: { cash: -50000, productQuality: -0.1, teamMorale: 0.1 },
-            },
-          },
-        ],
-      },
-      {
-        id: "desperate_for_funding",
-        title: "Cash Crunch",
-        description:
-          "Your aggressive growth strategy has depleted cash reserves faster than expected. The company urgently needs funding.",
-        type: "negative",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Take a high-interest emergency loan",
-            effects: {
-              company: { cash: 200000, burnRate: 5000 },
-            },
-          },
-          {
-            text: "Offer significant equity at a discount to investors",
-            effects: {
-              special: "emergency_funding",
-            },
-          },
-          {
-            text: "Dramatically cut costs and staff",
-            effects: {
-              company: { burnRate: -10000, productQuality: -0.2, users: -500 },
-            },
-          },
-        ],
-      },
-      {
-        id: "competitor_stealing_users",
-        title: "Market Share Decline",
-        description:
-          "The competitor you ignored has been rapidly stealing your users with an aggressive marketing campaign.",
-        type: "negative",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Launch a counter-marketing campaign",
-            effects: {
-              company: { cash: -100000, users: 200, churnRate: -0.02 },
-            },
-          },
-          {
-            text: "Add unique features to differentiate your product",
-            effects: {
-              company: { cash: -50000, productQuality: 0.2 },
-            },
-          },
-          {
-            text: "Reduce prices to retain users",
-            effects: {
-              company: { revenue: -3000, users: 100, churnRate: -0.01 },
-            },
-          },
-        ],
-      },
-      {
-        id: "partnership_opportunity",
-        title: "Partnership Proposal",
-        description:
-          "The company that acquired your competitor has reached out with a partnership offer that could expand your reach.",
-        type: "positive",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Accept the partnership on their terms",
+            text: "Accelerate product development to stay competitive",
             effects: {
               company: {
-                users: 1000,
-                valuation: 200000,
-                equity: { player: -0.05 },
+                cash: -1000000,
+                productQuality: 0.15,
+                teamMorale: -0.1,
               },
             },
           },
           {
-            text: "Negotiate for better terms",
-            effects: {
-              company: { users: 500 },
-            },
-            chainEvent: {
-              eventId: "partnership_negotiation",
-              delay: 2,
-              probability: 1.0,
-            },
-          },
-          {
-            text: "Reject the offer to maintain independence",
-            effects: {
-              company: { teamMorale: 0.1 },
-            },
-          },
-        ],
-      },
-      {
-        id: "partnership_negotiation",
-        title: "Partnership Negotiation Results",
-        description:
-          "After tough negotiations, the partner has come back with a revised offer.",
-        type: "neutral",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Accept the improved offer",
+            text: "Launch aggressive marketing campaign to retain users",
             effects: {
               company: {
-                users: 800,
-                valuation: 300000,
-                equity: { player: -0.03 },
-              },
-            },
-          },
-          {
-            text: "Walk away from the deal",
-            effects: {
-              company: { teamMorale: 0.1, valuation: -100000 },
-            },
-          },
-        ],
-      },
-      {
-        id: "lobby_outcome",
-        title: "Regulatory Lobbying Outcome",
-        description:
-          "Your lobbying efforts against the new fintech regulations have produced results.",
-        type: "positive",
-        requiredIndustry: "fintech",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Capitalize on the relaxed regulations",
-            effects: {
-              company: { users: 500, revenue: 10000 },
-            },
-          },
-          {
-            text: "Still implement some compliance measures as a precaution",
-            effects: {
-              company: { cash: -50000, productQuality: 0.05 },
-            },
-          },
-        ],
-      },
-      {
-        id: "regulatory_crackdown",
-        title: "Regulatory Crackdown",
-        description:
-          "Regulators have noticed your non-compliance with the new fintech regulations and issued hefty fines.",
-        type: "negative",
-        requiredIndustry: "fintech",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Pay the fines and quickly implement compliance",
-            effects: {
-              company: { cash: -200000, productQuality: 0.05 },
-            },
-          },
-          {
-            text: "Fight the fines in court",
-            effects: {
-              company: { cash: -50000 },
-            },
-            chainEvent: {
-              eventId: "court_outcome",
-              delay: 3,
-              probability: 1.0,
-            },
-          },
-        ],
-      },
-      {
-        id: "integration_broken",
-        title: "Integration Breakdown",
-        description:
-          "Your delay in updating has resulted in broken integrations, causing major issues for customers.",
-        type: "negative",
-        requiredIndustry: "saas",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Rush emergency fix with all hands on deck",
-            effects: {
-              company: { cash: -80000, productQuality: -0.1, teamMorale: -0.2 },
-            },
-          },
-          {
-            text: "Apologize to customers and provide timeline for fix",
-            effects: {
-              company: { users: -300, churnRate: 0.05 },
-            },
-          },
-        ],
-      },
-      {
-        id: "customer_complaints",
-        title: "Shipping Complaint Wave",
-        description:
-          "Your customers are flooding social media with complaints about shipping delays.",
-        type: "negative",
-        requiredIndustry: "ecommerce",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Offer refunds or discounts to affected customers",
-            effects: {
-              company: { cash: -60000, churnRate: -0.03 },
-            },
-          },
-          {
-            text: "Hire a PR team to manage the crisis",
-            effects: {
-              company: { cash: -40000, churnRate: -0.01 },
-            },
-          },
-        ],
-      },
-      {
-        id: "algorithm_mastery",
-        title: "Algorithm Breakthrough",
-        description:
-          "Your team has cracked the new social platform algorithm, allowing for greater visibility.",
-        type: "positive",
-        requiredIndustry: "social",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Maximize user acquisition with the new insights",
-            effects: {
-              company: { users: 2000, marketing: { brand: 0.2 } },
-            },
-          },
-          {
-            text: "Share insights with select partners for mutual benefit",
-            effects: {
-              company: { users: 1000, valuation: 200000 },
-            },
-          },
-        ],
-      },
-    ];
-
-    // Risk/Reward events (high stakes decisions)
-    this.eventPool.risk_reward = [
-      {
-        id: "venture_capital_gambit",
-        title: "High-Stakes VC Meeting",
-        description:
-          "A prestigious VC firm is impressed by your startup and offers a meeting, but they're known for tough negotiations and high expectations.",
-        type: "opportunity",
-        minValuation: 2000000, // Only occurs if company valuation is at least $2M
-        choices: [
-          {
-            text: "Prepare extensively and aim for a conservative valuation",
-            effects: {
-              company: { cash: -20000 }, // Cost of preparation
-              special: "vc_meeting_conservative",
-            },
-          },
-          {
-            text: "Pitch an ambitious vision with higher valuation",
-            effects: {
-              special: "vc_meeting_ambitious",
-            },
-          },
-        ],
-      },
-      {
-        id: "acquisition_rumor",
-        title: "Acquisition Rumor",
-        description:
-          "There's a rumor that a major player in your industry is looking to acquire a company like yours. You could reach out, but it might distract from operations.",
-        type: "opportunity",
-        minValuation: 5000000, // Only for more established startups
-        choices: [
-          {
-            text: "Actively pursue the acquisition possibility",
-            effects: {
-              company: { productQuality: -0.1, teamMorale: -0.1 },
-              special: "pursue_acquisition",
-            },
-          },
-          {
-            text: "Focus on growth to attract better offers later",
-            effects: {
-              company: { productQuality: 0.1, teamMorale: 0.1 },
-            },
-          },
-        ],
-      },
-      {
-        id: "moonshot_project",
-        title: "Moonshot Project Opportunity",
-        description:
-          "Your team has an idea for a revolutionary feature that could transform your industry, but it would require significant resources.",
-        type: "opportunity",
-        minTurn: 10, // Only appear after turn 10
-        choices: [
-          {
-            text: "Go all-in on the moonshot project",
-            effects: {
-              company: { cash: -200000, productQuality: -0.1 }, // Initially hurts product as resources are diverted
-            },
-            chainEvent: {
-              eventId: "moonshot_outcome",
-              delay: 4,
-              probability: 1.0,
-            },
-          },
-          {
-            text: "Take a measured approach, developing it alongside existing products",
-            effects: {
-              company: { cash: -100000 },
-            },
-            chainEvent: {
-              eventId: "moonshot_partial",
-              delay: 6,
-              probability: 1.0,
-            },
-          },
-          {
-            text: "Pass on the high-risk project",
-            effects: {
-              company: { teamMorale: -0.1 },
-            },
-          },
-        ],
-      },
-      {
-        id: "questionable_growth_tactic",
-        title: "Growth at Any Cost?",
-        description:
-          "Your marketing team proposes a legally questionable but highly effective user acquisition tactic used by competitors.",
-        type: "opportunity",
-        choices: [
-          {
-            text: "Implement the aggressive tactics",
-            effects: {
-              company: { users: 3000, churnRate: 0.01 },
-            },
-            chainEvent: {
-              eventId: "tactic_backlash",
-              delay: 3,
-              probability: 0.7,
-            },
-          },
-          {
-            text: "Find a legal alternative, even if less effective",
-            effects: {
-              company: { users: 1000, marketing: { brand: 0.1 } },
-            },
-          },
-        ],
-      },
-    ];
-
-    // Special chain events for risk/reward outcomes
-    this.eventPool.chain.push(
-      {
-        id: "moonshot_outcome",
-        title: "Moonshot Project Results",
-        description:
-          "Your team has completed the ambitious moonshot project after tremendous effort.",
-        type: "positive",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Release it as a standalone premium product",
-            effects: {
-              company: {
-                revenue: 50000,
-                users: 1000,
-                valuation: 1000000,
-                productQuality: 0.3,
-              },
-            },
-          },
-          {
-            text: "Integrate it into your core offering for all users",
-            effects: {
-              company: { users: 5000, valuation: 2000000, productQuality: 0.5 },
-            },
-          },
-        ],
-      },
-      {
-        id: "moonshot_partial",
-        title: "Partial Innovation Results",
-        description:
-          "Your measured approach to the moonshot project has yielded solid but not revolutionary results.",
-        type: "positive",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Release as a new feature to existing customers",
-            effects: {
-              company: {
-                revenue: 20000,
-                churnRate: -0.03,
-                productQuality: 0.2,
-              },
-            },
-          },
-          {
-            text: "Invest more to complete the full vision",
-            effects: {
-              company: { cash: -100000 },
-            },
-            chainEvent: {
-              eventId: "moonshot_outcome",
-              delay: 3,
-              probability: 0.8,
-            },
-          },
-        ],
-      },
-      {
-        id: "tactic_backlash",
-        title: "Marketing Tactics Backlash",
-        description:
-          "Your aggressive growth tactics have been exposed by a tech journalist, leading to public criticism.",
-        type: "negative",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Apologize publicly and change practices",
-            effects: {
-              company: {
-                users: -1000,
+                cash: -800000,
+                brand: 0.2,
                 churnRate: -0.02,
-                marketing: { brand: -0.2 },
               },
             },
           },
           {
-            text: "Deny wrongdoing and continue tactics",
-            effects: {
-              company: {
-                users: -500,
-                churnRate: 0.05,
-                marketing: { brand: -0.3 },
-              },
-            },
-            chainEvent: {
-              eventId: "regulatory_investigation",
-              delay: 2,
-              probability: 0.8,
-            },
-          },
-        ],
-      },
-      {
-        id: "regulatory_investigation",
-        title: "Regulatory Investigation",
-        description:
-          "Following public backlash, regulators have launched an investigation into your marketing practices.",
-        type: "negative",
-        isChainEvent: true,
-        choices: [
-          {
-            text: "Cooperate fully and settle quickly",
+            text: "Explore potential acquisition targets to counter the merger",
             effects: {
               company: {
                 cash: -500000,
                 valuation: -1000000,
-                marketing: { brand: 0.1 },
               },
-            },
-          },
-          {
-            text: "Fight the investigation",
-            effects: {
-              company: { cash: -200000 },
-            },
-            chainEvent: {
-              eventId: "investigation_outcome",
-              delay: 3,
-              probability: 1.0,
+              special: "acquisition_opportunity",
             },
           },
         ],
       },
       {
-        id: "investigation_outcome",
-        title: "Investigation Outcome",
+        id: "talent_poaching",
+        title: "Talent Poaching",
         description:
-          "The regulatory investigation has concluded after your legal battle.",
+          "A well-funded competitor is actively recruiting your key team members with lucrative offers.",
         type: "negative",
-        isChainEvent: true,
+        minValuation: 10000000, // Only for companies valued at $10M+
         choices: [
           {
-            text: "Accept the ruling and pay the fine",
+            text: "Increase salaries and benefits to retain talent",
             effects: {
-              company: { cash: -300000, valuation: -800000 },
+              company: {
+                cash: -500000,
+                teamMorale: 0.15,
+              },
             },
           },
           {
-            text: "Appeal to higher court (high risk)",
+            text: "Offer equity incentives instead of cash",
             effects: {
-              company: { cash: -100000 },
+              company: {
+                equity: { player: -0.05 },
+                teamMorale: 0.1,
+              },
             },
-            special: "regulatory_appeal",
+          },
+          {
+            text: "Let some talent go and focus on recruiting replacements",
+            effects: {
+              company: {
+                teamMorale: -0.2,
+                productQuality: -0.1,
+              },
+            },
           },
         ],
-      }
-    );
+      },
+    ];
 
-    // Initialize other event categories similarly
-    // Add internal events, opportunities, etc.
+    // Internal events
+    this.eventPool.internal = [
+      {
+        id: "team_conflict",
+        title: "Team Conflict",
+        description:
+          "There's growing tension between team members that's affecting productivity.",
+        type: "negative",
+        choices: [
+          {
+            text: "Mediate and resolve the conflict",
+            effects: {
+              company: { teamMorale: 0.1, productQuality: 0.05 },
+            },
+          },
+          {
+            text: "Restructure teams to separate conflicting members",
+            effects: {
+              company: { teamMorale: -0.05, productQuality: 0.02 },
+            },
+          },
+          {
+            text: "Ignore it and hope it resolves itself",
+            effects: {
+              company: { teamMorale: -0.2, productQuality: -0.1 },
+            },
+          },
+        ],
+      },
+
+      // Events for larger companies
+      {
+        id: "scaling_infrastructure_challenges",
+        title: "Scaling Infrastructure Challenges",
+        description:
+          "Your platform is experiencing stability issues due to rapid user growth. The current infrastructure needs significant upgrades.",
+        type: "negative",
+        minUsers: 100000, // Only for companies with 100K+ users
+        choices: [
+          {
+            text: "Complete infrastructure overhaul",
+            effects: {
+              company: {
+                cash: -2000000,
+                productQuality: 0.2,
+                churnRate: -0.05,
+              },
+            },
+          },
+          {
+            text: "Implement targeted improvements to critical systems",
+            effects: {
+              company: {
+                cash: -800000,
+                productQuality: 0.1,
+                churnRate: -0.02,
+              },
+            },
+          },
+          {
+            text: "Minimal patches while planning long-term solutions",
+            effects: {
+              company: {
+                cash: -200000,
+                users: -5000,
+                churnRate: 0.03,
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "corporate_restructuring",
+        title: "Corporate Restructuring Needed",
+        description:
+          "Your company has grown rapidly but organizational inefficiencies are becoming apparent. A restructuring could improve operations but carries risks.",
+        type: "neutral",
+        minValuation: 50000000, // Only for companies valued at $50M+
+        minUsers: 200000, // Only for companies with 200K+ users
+        choices: [
+          {
+            text: "Implement comprehensive restructuring with consultants",
+            effects: {
+              company: {
+                cash: -3000000,
+                teamMorale: -0.1,
+                productQuality: 0.15,
+                valuation: 5000000,
+              },
+            },
+          },
+          {
+            text: "Gradual departmental reorganization",
+            effects: {
+              company: {
+                cash: -1000000,
+                teamMorale: 0.05,
+                productQuality: 0.05,
+              },
+            },
+          },
+          {
+            text: "Maintain current structure but improve processes",
+            effects: {
+              company: {
+                cash: -500000,
+                teamMorale: 0.1,
+              },
+            },
+          },
+        ],
+      },
+    ];
+
+    // Opportunity events
+    this.eventPool.opportunity = [
+      {
+        id: "partnership_offer",
+        title: "Partnership Opportunity",
+        description:
+          "A complementary business has approached you about a strategic partnership.",
+        type: "positive",
+        choices: [
+          {
+            text: "Accept the partnership",
+            effects: {
+              company: { users: 500, valuation: 50000 },
+            },
+          },
+          {
+            text: "Negotiate better terms",
+            effects: {
+              company: { users: 200, valuation: 20000 },
+            },
+          },
+          {
+            text: "Decline and focus on your core business",
+            effects: {
+              company: { teamMorale: 0.05 },
+            },
+          },
+        ],
+      },
+
+      // Events for larger companies
+      {
+        id: "acquisition_target",
+        title: "Acquisition Target Identified",
+        description:
+          "Your team has identified a promising smaller competitor that could be acquired to expand your market share and technology capabilities.",
+        type: "opportunity",
+        minValuation: 100000000, // Only for companies valued at $100M+
+        minUsers: 500000, // Only for companies with 500K+ users
+        choices: [
+          {
+            text: "Pursue aggressive acquisition",
+            effects: {
+              company: {
+                cash: -20000000,
+                users: 100000,
+                productQuality: 0.1,
+                valuation: 30000000,
+              },
+            },
+          },
+          {
+            text: "Negotiate strategic partnership instead",
+            effects: {
+              company: {
+                cash: -5000000,
+                users: 20000,
+                brand: 0.1,
+              },
+            },
+          },
+          {
+            text: "Decline and focus on organic growth",
+            effects: {
+              company: {
+                cash: 0,
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "major_enterprise_client",
+        title: "Major Enterprise Client Opportunity",
+        description:
+          "A Fortune 500 company is interested in implementing your solution across their organization, but requires custom features and dedicated support.",
+        type: "opportunity",
+        minValuation: 50000000, // Only for companies valued at $50M+
+        minRevenue: 500000, // Only for companies with $500K+ monthly revenue
+        choices: [
+          {
+            text: "Dedicate resources to win and service this client",
+            effects: {
+              company: {
+                cash: -2000000,
+                revenue: 500000,
+                valuation: 10000000,
+                teamMorale: -0.05,
+              },
+            },
+          },
+          {
+            text: "Offer limited customization within your product roadmap",
+            effects: {
+              company: {
+                cash: -500000,
+                revenue: 200000,
+                valuation: 3000000,
+              },
+            },
+          },
+          {
+            text: "Decline to maintain focus on core market",
+            effects: {
+              company: {
+                teamMorale: 0.05,
+              },
+            },
+          },
+        ],
+      },
+    ];
+
+    // Global events
+    this.eventPool.global = [
+      {
+        id: "economic_recession",
+        title: "Economic Recession",
+        description:
+          "A global economic downturn is affecting markets worldwide.",
+        type: "negative",
+        choices: [
+          {
+            text: "Cut costs aggressively",
+            effects: {
+              company: { cash: -5000, teamMorale: -0.2 },
+              market: { fundingAvailability: -0.3 },
+            },
+          },
+          {
+            text: "Maintain operations but delay expansion",
+            effects: {
+              company: { cash: -20000 },
+              market: { fundingAvailability: -0.2 },
+            },
+          },
+          {
+            text: "Invest counter-cyclically to gain market share",
+            effects: {
+              company: { cash: -50000, valuation: -100000 },
+              market: { fundingAvailability: -0.1 },
+            },
+          },
+        ],
+      },
+
+      // Events for larger companies
+      {
+        id: "regulatory_scrutiny",
+        title: "Regulatory Scrutiny",
+        description:
+          "As your company has grown, it's attracted attention from regulators concerned about data privacy and market competition practices.",
+        type: "negative",
+        minValuation: 500000000, // Only for companies valued at $500M+
+        minUsers: 1000000, // Only for companies with 1M+ users
+        choices: [
+          {
+            text: "Proactively implement comprehensive compliance measures",
+            effects: {
+              company: {
+                cash: -10000000,
+                valuation: -20000000,
+                teamMorale: -0.1,
+                productQuality: -0.05,
+              },
+            },
+          },
+          {
+            text: "Engage with regulators while making minimal changes",
+            effects: {
+              company: {
+                cash: -5000000,
+                valuation: -50000000,
+                churnRate: 0.02,
+              },
+            },
+          },
+          {
+            text: "Fight regulations through legal challenges",
+            effects: {
+              company: {
+                cash: -20000000,
+                valuation: -100000000,
+                brand: -0.2,
+              },
+              special: "regulatory_battle",
+            },
+          },
+        ],
+      },
+      {
+        id: "international_expansion_challenges",
+        title: "International Expansion Challenges",
+        description:
+          "Your global expansion is facing unexpected challenges with local regulations, cultural differences, and established competitors.",
+        type: "negative",
+        minValuation: 200000000, // Only for companies valued at $200M+
+        minUsers: 500000, // Only for companies with 500K+ users
+        choices: [
+          {
+            text: "Invest heavily in localization and compliance",
+            effects: {
+              company: {
+                cash: -15000000,
+                users: 200000,
+                valuation: 30000000,
+              },
+            },
+          },
+          {
+            text: "Scale back to focus on most promising markets",
+            effects: {
+              company: {
+                cash: -5000000,
+                users: 50000,
+                valuation: 10000000,
+              },
+            },
+          },
+          {
+            text: "Partner with local companies in key markets",
+            effects: {
+              company: {
+                cash: -8000000,
+                users: 100000,
+                equity: { player: -0.05 },
+              },
+            },
+          },
+        ],
+      },
+    ];
+
+    // Risk/reward events
+    this.eventPool.risk_reward = [
+      {
+        id: "risky_feature",
+        title: "Risky Feature Development",
+        description:
+          "Your team has proposed a high-risk, high-reward feature that could differentiate your product but might delay other priorities.",
+        type: "risk_reward",
+        choices: [
+          {
+            text: "Go all-in on the risky feature",
+            effects: {
+              company: { cash: -30000, productQuality: 0.2, teamMorale: -0.1 },
+            },
+          },
+          {
+            text: "Develop a scaled-down version",
+            effects: {
+              company: { cash: -15000, productQuality: 0.1 },
+            },
+          },
+          {
+            text: "Stick to the original roadmap",
+            effects: {
+              company: { teamMorale: 0.05 },
+            },
+          },
+        ],
+      },
+
+      // Events for larger companies
+      {
+        id: "major_pivot_opportunity",
+        title: "Major Pivot Opportunity",
+        description:
+          "Market analysis suggests a significant opportunity to pivot your business model to capture a much larger market, but it would require substantial changes.",
+        type: "risk_reward",
+        minValuation: 100000000, // Only for companies valued at $100M+
+        choices: [
+          {
+            text: "Commit to the pivot with full resources",
+            effects: {
+              company: {
+                cash: -30000000,
+                users: -100000,
+                churnRate: 0.1,
+                valuation: -50000000,
+              },
+              special: "major_pivot_outcome",
+            },
+          },
+          {
+            text: "Test the new model with a separate division",
+            effects: {
+              company: {
+                cash: -10000000,
+                teamMorale: -0.1,
+              },
+            },
+          },
+          {
+            text: "Maintain current course with minor adjustments",
+            effects: {
+              company: {
+                teamMorale: 0.05,
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "ipo_consideration",
+        title: "IPO Consideration",
+        description:
+          "Your board and investors are pushing for an IPO to provide liquidity. The market conditions seem favorable, but going public would bring new pressures and scrutiny.",
+        type: "risk_reward",
+        minValuation: 500000000, // Only for companies valued at $500M+
+        minRevenue: 5000000, // Only for companies with $5M+ monthly revenue
+        choices: [
+          {
+            text: "Begin IPO preparations",
+            effects: {
+              company: {
+                cash: -5000000,
+                valuation: 100000000,
+                teamMorale: -0.1,
+              },
+              special: "ipo_preparation",
+            },
+          },
+          {
+            text: "Raise one more private funding round instead",
+            effects: {
+              company: {
+                valuation: 50000000,
+                equity: { player: -0.1 },
+              },
+            },
+          },
+          {
+            text: "Delay IPO decision for another year",
+            effects: {
+              company: {
+                teamMorale: -0.05,
+                valuation: -20000000,
+              },
+            },
+          },
+        ],
+      },
+    ];
+
+    // Add chain events
+    this._addChainEvents();
   }
 
   /**
@@ -937,6 +832,8 @@ class EventSystem {
     const currentTurn = this.game.state.currentTurn;
     const companyIndustry = this.game.company.industry;
     const companyValuation = this.game.company.valuation;
+    const companyUsers = this.game.company.users;
+    const companyRevenue = this.game.company.revenue;
 
     // Get eligible categories
     const availableCategories = CONFIG.EVENT_CATEGORIES.filter(
@@ -992,6 +889,31 @@ class EventSystem {
         return false;
       }
 
+      // Check maximum valuation requirement (if specified)
+      if (event.maxValuation && companyValuation > event.maxValuation) {
+        return false;
+      }
+
+      // Check minimum users requirement (if specified)
+      if (event.minUsers && companyUsers < event.minUsers) {
+        return false;
+      }
+
+      // Check maximum users requirement (if specified)
+      if (event.maxUsers && companyUsers > event.maxUsers) {
+        return false;
+      }
+
+      // Check minimum revenue requirement (if specified)
+      if (event.minRevenue && companyRevenue < event.minRevenue) {
+        return false;
+      }
+
+      // Check maximum revenue requirement (if specified)
+      if (event.maxRevenue && companyRevenue > event.maxRevenue) {
+        return false;
+      }
+
       // Check minimum turn requirement
       if (event.minTurn && currentTurn < event.minTurn) {
         return false;
@@ -1015,7 +937,276 @@ class EventSystem {
 
     // Select a random event from eligible events
     const randomIndex = Math.floor(Math.random() * eligibleEvents.length);
-    return JSON.parse(JSON.stringify(eligibleEvents[randomIndex])); // Deep clone to avoid modifying the original
+    const selectedEvent = JSON.parse(
+      JSON.stringify(eligibleEvents[randomIndex])
+    ); // Deep clone to avoid modifying the original
+
+    // Scale the event based on company size
+    this._scaleEventForCompanySize(selectedEvent);
+
+    return selectedEvent;
+  }
+
+  /**
+   * Scale event description and effects based on company size
+   * @param {Object} event - The event to scale
+   * @private
+   */
+  _scaleEventForCompanySize(event) {
+    const company = this.game.company;
+
+    // Define scaling tiers based on company metrics
+    const sizeTier = this._getCompanySizeTier();
+
+    // Scale numeric values in the description
+    if (event.description) {
+      event.description = this._scaleTextValues(event.description, sizeTier);
+    }
+
+    // Scale choice text
+    if (event.choices && event.choices.length > 0) {
+      event.choices.forEach((choice) => {
+        if (choice.text) {
+          choice.text = this._scaleTextValues(choice.text, sizeTier);
+        }
+
+        // Scale effects
+        if (choice.effects) {
+          this._scaleEffects(choice.effects, sizeTier);
+        }
+      });
+    }
+
+    return event;
+  }
+
+  /**
+   * Get the company size tier based on metrics
+   * @returns {Object} Size tier with scaling factors
+   * @private
+   */
+  _getCompanySizeTier() {
+    const company = this.game.company;
+
+    // Define tiers based on company valuation
+    let valuationTier = 1;
+    if (company.valuation >= 1000000000) valuationTier = 6; // $1B+
+    else if (company.valuation >= 500000000) valuationTier = 5; // $500M+
+    else if (company.valuation >= 100000000) valuationTier = 4; // $100M+
+    else if (company.valuation >= 50000000) valuationTier = 3; // $50M+
+    else if (company.valuation >= 10000000) valuationTier = 2; // $10M+
+
+    // Define tiers based on users
+    let usersTier = 1;
+    if (company.users >= 10000000) usersTier = 6; // 10M+ users
+    else if (company.users >= 1000000) usersTier = 5; // 1M+ users
+    else if (company.users >= 100000) usersTier = 4; // 100K+ users
+    else if (company.users >= 10000) usersTier = 3; // 10K+ users
+    else if (company.users >= 1000) usersTier = 2; // 1K+ users
+
+    // Define tiers based on revenue
+    let revenueTier = 1;
+    if (company.revenue * 12 >= 100000000)
+      revenueTier = 6; // $100M+ annual revenue
+    else if (company.revenue * 12 >= 50000000)
+      revenueTier = 5; // $50M+ annual revenue
+    else if (company.revenue * 12 >= 10000000)
+      revenueTier = 4; // $10M+ annual revenue
+    else if (company.revenue * 12 >= 1000000)
+      revenueTier = 3; // $1M+ annual revenue
+    else if (company.revenue * 12 >= 100000) revenueTier = 2; // $100K+ annual revenue
+
+    // Use the highest tier from all metrics
+    const tier = Math.max(valuationTier, usersTier, revenueTier);
+
+    // Define scaling factors for each tier
+    const scalingFactors = {
+      1: {
+        // Early startup
+        userScale: 1,
+        cashScale: 1,
+        valuationScale: 1,
+        textReplacements: {
+          "100 users": "100 users",
+          "1,000 users": "1,000 users",
+          "small team": "small team",
+          "$10,000": "$10,000",
+          "$50,000": "$50,000",
+          "$100,000": "$100,000",
+        },
+      },
+      2: {
+        // Growing startup
+        userScale: 10,
+        cashScale: 5,
+        valuationScale: 3,
+        textReplacements: {
+          "100 users": "1,000 users",
+          "1,000 users": "10,000 users",
+          "small team": "growing team",
+          "$10,000": "$50,000",
+          "$50,000": "$150,000",
+          "$100,000": "$300,000",
+        },
+      },
+      3: {
+        // Established startup
+        userScale: 50,
+        cashScale: 10,
+        valuationScale: 5,
+        textReplacements: {
+          "100 users": "5,000 users",
+          "1,000 users": "50,000 users",
+          "small team": "established team",
+          "$10,000": "$100,000",
+          "$50,000": "$500,000",
+          "$100,000": "$1,000,000",
+        },
+      },
+      4: {
+        // Growth company
+        userScale: 200,
+        cashScale: 20,
+        valuationScale: 10,
+        textReplacements: {
+          "100 users": "20,000 users",
+          "1,000 users": "200,000 users",
+          "small team": "large organization",
+          "$10,000": "$200,000",
+          "$50,000": "$1,000,000",
+          "$100,000": "$2,000,000",
+        },
+      },
+      5: {
+        // Major player
+        userScale: 1000,
+        cashScale: 50,
+        valuationScale: 20,
+        textReplacements: {
+          "100 users": "100,000 users",
+          "1,000 users": "1,000,000 users",
+          "small team": "major organization",
+          "$10,000": "$500,000",
+          "$50,000": "$2,500,000",
+          "$100,000": "$5,000,000",
+        },
+      },
+      6: {
+        // Industry leader
+        userScale: 5000,
+        cashScale: 100,
+        valuationScale: 50,
+        textReplacements: {
+          "100 users": "500,000 users",
+          "1,000 users": "5,000,000 users",
+          "small team": "industry-leading organization",
+          "$10,000": "$1,000,000",
+          "$50,000": "$5,000,000",
+          "$100,000": "$10,000,000",
+        },
+      },
+    };
+
+    return {
+      tier,
+      ...scalingFactors[tier],
+    };
+  }
+
+  /**
+   * Scale text values in a string based on company size
+   * @param {string} text - The text to scale
+   * @param {Object} sizeTier - The company size tier with scaling factors
+   * @returns {string} Scaled text
+   * @private
+   */
+  _scaleTextValues(text, sizeTier) {
+    let scaledText = text;
+
+    // Replace common phrases with scaled versions
+    Object.entries(sizeTier.textReplacements).forEach(
+      ([original, replacement]) => {
+        scaledText = scaledText.replace(new RegExp(original, "g"), replacement);
+      }
+    );
+
+    return scaledText;
+  }
+
+  /**
+   * Scale effects based on company size
+   * @param {Object} effects - The effects to scale
+   * @param {Object} sizeTier - The company size tier with scaling factors
+   * @private
+   */
+  _scaleEffects(effects, sizeTier) {
+    // Scale cash effects
+    if (effects.company && typeof effects.company.cash === "number") {
+      const scaledCash = effects.company.cash * sizeTier.cashScale;
+      effects.company.cash = scaledCash;
+
+      console.log(
+        `Applied scaled cash effect: ${scaledCash} (original: ${effects.company.cash}, scale: ${sizeTier.cashScale})`
+      );
+    }
+
+    // Scale user effects
+    if (effects.company && typeof effects.company.users === "number") {
+      const scaledUsers = effects.company.users * sizeTier.userScale;
+      effects.company.users = scaledUsers;
+
+      console.log(
+        `Applied scaled users effect: ${scaledUsers} (original: ${effects.company.users}, scale: ${sizeTier.userScale})`
+      );
+    }
+
+    // Scale valuation effects
+    if (effects.company && typeof effects.company.valuation === "number") {
+      const scaledValuation =
+        effects.company.valuation * sizeTier.valuationScale;
+      effects.company.valuation = scaledValuation;
+
+      console.log(
+        `Applied scaled valuation effect: ${scaledValuation} (original: ${effects.company.valuation}, scale: ${sizeTier.valuationScale})`
+      );
+    }
+
+    // Scale team morale effects
+    if (effects.company && typeof effects.company.teamMorale === "number") {
+      effects.company.teamMorale = Math.max(
+        0,
+        Math.min(1, effects.company.teamMorale + effects.company.teamMorale)
+      );
+    }
+
+    // Scale product quality effects
+    if (effects.company && typeof effects.company.productQuality === "number") {
+      effects.company.productQuality = Math.max(
+        0,
+        Math.min(
+          1,
+          effects.company.productQuality + effects.company.productQuality
+        )
+      );
+    }
+
+    // Scale brand effects
+    if (effects.company && typeof effects.company.brand === "number") {
+      effects.company.marketing.brand = Math.max(
+        0,
+        Math.min(1, company.marketing.brand + effects.company.brand)
+      );
+    }
+
+    // Scale churn rate effects
+    if (effects.company && typeof effects.company.churnRate === "number") {
+      effects.company.churnRate = Math.max(
+        0.01,
+        Math.min(0.5, company.churnRate + effects.company.churnRate)
+      );
+    }
+
+    return effects;
   }
 
   /**
@@ -1101,41 +1292,104 @@ class EventSystem {
    * @private
    */
   _applyEventEffects(effects) {
+    // Get company size tier for scaling
+    const sizeTier = this._getCompanySizeTier();
+
     // Apply effects to company
     if (effects.company) {
       const company = this.game.company;
 
-      // Apply numeric adjustments
-      if (effects.company.cash) company.cash += effects.company.cash;
-      if (effects.company.valuation)
-        company.valuation += effects.company.valuation;
-      if (effects.company.users) company.users += effects.company.users;
-      if (effects.company.revenue) company.revenue += effects.company.revenue;
-      if (effects.company.churnRate)
-        company.churnRate += effects.company.churnRate;
+      // Cash effects
+      if (typeof effects.company.cash === "number") {
+        // Scale cash effects based on company size
+        const scaledCash = effects.company.cash * sizeTier.cashScale;
+        company.cash += scaledCash;
 
-      // Apply multiplier effects
-      if (effects.company.cashMultiplier)
-        company.cash *= effects.company.cashMultiplier;
-      if (effects.company.valuationMultiplier)
-        company.valuation *= effects.company.valuationMultiplier;
-      if (effects.company.usersMultiplier)
-        company.users *= effects.company.usersMultiplier;
-      if (effects.company.revenueMultiplier)
-        company.revenue *= effects.company.revenueMultiplier;
-
-      // Apply complex effects
-      if (effects.company.productQuality) {
-        company.product.quality += effects.company.productQuality;
-        company.product.quality = Math.max(
-          0,
-          Math.min(1, company.product.quality)
+        // Log the scaled effect
+        console.log(
+          `Applied scaled cash effect: ${scaledCash} (original: ${effects.company.cash}, scale: ${sizeTier.cashScale})`
         );
       }
 
-      if (effects.company.teamMorale) {
-        company.team.morale += effects.company.teamMorale;
-        company.team.morale = Math.max(0, Math.min(1, company.team.morale));
+      // User effects
+      if (typeof effects.company.users === "number") {
+        // Scale user effects based on company size
+        const scaledUsers = effects.company.users * sizeTier.userScale;
+        company.users += scaledUsers;
+
+        // Log the scaled effect
+        console.log(
+          `Applied scaled users effect: ${scaledUsers} (original: ${effects.company.users}, scale: ${sizeTier.userScale})`
+        );
+      }
+
+      // Valuation effects
+      if (typeof effects.company.valuation === "number") {
+        // Scale valuation effects based on company size
+        const scaledValuation =
+          effects.company.valuation * sizeTier.valuationScale;
+        company.valuation += scaledValuation;
+
+        // Log the scaled effect
+        console.log(
+          `Applied scaled valuation effect: ${scaledValuation} (original: ${effects.company.valuation}, scale: ${sizeTier.valuationScale})`
+        );
+      }
+
+      // Revenue effects
+      if (typeof effects.company.revenue === "number") {
+        // Scale revenue effects based on company size
+        const scaledRevenue = effects.company.revenue * sizeTier.cashScale;
+        company.revenue += scaledRevenue;
+      }
+
+      // Apply multiplier effects
+      if (effects.company.cashMultiplier) {
+        company.cash *= effects.company.cashMultiplier;
+      }
+
+      if (effects.company.valuationMultiplier) {
+        company.valuation *= effects.company.valuationMultiplier;
+      }
+
+      if (effects.company.usersMultiplier) {
+        company.users *= effects.company.usersMultiplier;
+      }
+
+      if (effects.company.revenueMultiplier) {
+        company.revenue *= effects.company.revenueMultiplier;
+      }
+
+      // Team morale effects
+      if (typeof effects.company.teamMorale === "number") {
+        company.team.morale = Math.max(
+          0,
+          Math.min(1, company.team.morale + effects.company.teamMorale)
+        );
+      }
+
+      // Product quality effects
+      if (typeof effects.company.productQuality === "number") {
+        company.product.quality = Math.max(
+          0,
+          Math.min(1, company.product.quality + effects.company.productQuality)
+        );
+      }
+
+      // Brand effects
+      if (typeof effects.company.brand === "number") {
+        company.marketing.brand = Math.max(
+          0,
+          Math.min(1, company.marketing.brand + effects.company.brand)
+        );
+      }
+
+      // Churn rate effects
+      if (typeof effects.company.churnRate === "number") {
+        company.churnRate = Math.max(
+          0.01,
+          Math.min(0.5, company.churnRate + effects.company.churnRate)
+        );
       }
 
       // Handle equity adjustments
@@ -1150,140 +1404,85 @@ class EventSystem {
     if (effects.market) {
       const market = this.game.market;
 
-      if (effects.market.growthRate)
-        market.growthRate += effects.market.growthRate;
-      if (effects.market.valuationMultiplier)
-        market.valuationMultiplier += effects.market.valuationMultiplier;
-      if (effects.market.fundingAvailability)
+      if (effects.market.fundingAvailability) {
         market.fundingAvailability += effects.market.fundingAvailability;
+        market.fundingAvailability = Math.max(
+          0.1,
+          Math.min(2, market.fundingAvailability)
+        );
+      }
 
-      // Ensure values stay in reasonable ranges
-      market.growthRate = Math.max(-0.5, Math.min(1, market.growthRate));
-      market.valuationMultiplier = Math.max(0.1, market.valuationMultiplier);
-      market.fundingAvailability = Math.max(0.1, market.fundingAvailability);
+      if (effects.market.growthRate) {
+        market.growthRate += effects.market.growthRate;
+        market.growthRate = Math.max(-0.1, Math.min(0.5, market.growthRate));
+      }
+
+      if (effects.market.competitorActivity) {
+        market.competitorActivity += effects.market.competitorActivity;
+        market.competitorActivity = Math.max(
+          0.5,
+          Math.min(2, market.competitorActivity)
+        );
+      }
     }
 
-    // Handle special effects
+    // Apply special effects
     if (effects.special) {
-      // Handle acquisition exit
-      if (effects.special === "acquisition_exit") {
-        const company = this.game.company;
-
-        // Calculate acquisition value (typically a premium over current valuation)
-        const acquisitionValue = company.valuation * 1.5;
-
-        // Calculate player's share based on equity
-        const playerPayout = acquisitionValue * company.equity.player;
-
-        // End the game with acquisition
-        this.game.gameOver("acquisition", {
-          acquisitionValue: acquisitionValue,
-          playerPayout: playerPayout,
+      // Handle feature unlock
+      if (effects.special === "unlock_feature") {
+        const featureId = effects.featureId || "premium_feature";
+        this.game.company.product.features.push({
+          id: featureId,
+          name: effects.featureName || "Premium Feature",
+          development: 1.0, // Fully developed
+          quality: 0.8,
         });
+
+        this.game.addNotification(
+          `New feature unlocked: ${effects.featureName || "Premium Feature"}`,
+          "success"
+        );
       }
 
-      // Handle VC meeting outcomes
-      else if (effects.special === "vc_meeting_conservative") {
-        // 80% chance of success for conservative approach
-        if (Math.random() < 0.8) {
-          const investmentAmount = this.game.company.valuation * 0.3;
-          const equityGiven = 0.15;
+      // Handle competitor acquisition
+      else if (effects.special === "competitor_acquisition") {
+        const competitorIndex = this.game.market.competitors.findIndex(
+          (c) => c.id === effects.competitorId
+        );
 
-          this.game.company.cash += investmentAmount;
-          this.game.company.equity.player -= equityGiven;
-          this.game.company.equity.investors["Summit Ventures"] = equityGiven;
+        if (competitorIndex >= 0) {
+          const competitor = this.game.market.competitors[competitorIndex];
+          this.game.market.competitors.splice(competitorIndex, 1);
+
+          // Transfer some users from the acquired competitor
+          const transferredUsers = Math.floor(competitor.users * 0.4);
+          this.game.company.users += transferredUsers;
 
           this.game.addNotification(
-            `VC investment secured: $${Math.round(
-              investmentAmount
-            ).toLocaleString()} for ${(equityGiven * 100).toFixed(1)}% equity`,
+            `Competitor ${competitor.name} was acquired by ${
+              effects.acquirerName || "a major player"
+            }. You gained ${transferredUsers.toLocaleString()} users.`,
             "success"
-          );
-        } else {
-          this.game.addNotification(
-            "VC passed on investment opportunity despite conservative approach",
-            "negative"
-          );
-        }
-      } else if (effects.special === "vc_meeting_ambitious") {
-        // 40% chance of success for ambitious approach, but bigger payoff
-        if (Math.random() < 0.4) {
-          const investmentAmount = this.game.company.valuation * 0.5;
-          const equityGiven = 0.18;
-
-          this.game.company.cash += investmentAmount;
-          this.game.company.equity.player -= equityGiven;
-          this.game.company.equity.investors["Quantum Capital"] = equityGiven;
-
-          this.game.addNotification(
-            `Major VC investment secured: $${Math.round(
-              investmentAmount
-            ).toLocaleString()} for ${(equityGiven * 100).toFixed(1)}% equity`,
-            "success"
-          );
-        } else {
-          // Penalty for failed ambitious pitch
-          this.game.company.valuation *= 0.9;
-
-          this.game.addNotification(
-            "VC rejected ambitious valuation, damaging company reputation",
-            "negative"
-          );
-        }
-      }
-
-      // Handle acquisition pursuit
-      else if (effects.special === "pursue_acquisition") {
-        // 30% chance of immediate interest
-        if (Math.random() < 0.3) {
-          const acquisitionEvent = {
-            id: "acquisition_interest",
-            title: "Acquisition Interest",
-            type: "opportunity",
-            description:
-              "Your outreach succeeded! A major company is interested in acquiring your startup.",
-            turn: this.game.state.currentTurn,
-            choices: [
-              {
-                text: "Begin formal acquisition talks",
-                effects: {
-                  special: "acquisition_exit",
-                },
-              },
-              {
-                text: "Decline and continue building the company",
-                effects: {
-                  company: { valuation: this.game.company.valuation * 0.2 }, // Valuation boost from interest
-                },
-              },
-            ],
-          };
-
-          // Add the event to game state
-          this.game.state.events.push(acquisitionEvent);
-
-          // Show the event to the player
-          this.game.uiManager.showEventModal(acquisitionEvent);
-        } else {
-          this.game.addNotification(
-            "Your acquisition outreach didn't generate immediate interest",
-            "neutral"
           );
         }
       }
 
       // Handle emergency funding
       else if (effects.special === "emergency_funding") {
-        const investmentAmount = this.game.company.valuation * 0.2;
-        const equityGiven = 0.25; // 25% equity, very expensive funding
+        // Scale emergency funding based on company size
+        const baseInvestmentAmount = this.game.company.valuation * 0.2;
+        const scaledInvestmentAmount =
+          baseInvestmentAmount * sizeTier.cashScale;
+        const equityGiven =
+          0.25 * Math.max(0.5, 1 - (sizeTier.tier - 1) * 0.05); // Reduce equity as company grows
 
-        this.game.company.cash += investmentAmount;
+        this.game.company.cash += scaledInvestmentAmount;
         this.game.company.equity.player -= equityGiven;
         this.game.company.equity.investors["Rescue Capital"] = equityGiven;
 
         this.game.addNotification(
           `Emergency funding secured: $${Math.round(
-            investmentAmount
+            scaledInvestmentAmount
           ).toLocaleString()} for ${(equityGiven * 100).toFixed(1)}% equity`,
           "neutral"
         );
@@ -1291,20 +1490,35 @@ class EventSystem {
 
       // Handle regulatory appeal
       else if (effects.special === "regulatory_appeal") {
+        // Scale legal fees and fines based on company size
+        const baseLegalFees = 50000;
+        const baseFinePenalty = 800000;
+        const baseValuationHit = 1500000;
+
+        const scaledLegalFees = baseLegalFees * sizeTier.cashScale;
+        const scaledFinePenalty = baseFinePenalty * sizeTier.cashScale;
+        const scaledValuationHit = baseValuationHit * sizeTier.valuationScale;
+
         // Only 20% chance of winning appeal
         if (Math.random() < 0.2) {
-          this.game.company.cash -= 50000; // Legal fees
+          this.game.company.cash -= scaledLegalFees; // Legal fees
 
           this.game.addNotification(
-            "You won the regulatory appeal! Case dismissed with minimal fines.",
+            `You won the regulatory appeal! Case dismissed with minimal fines of $${Math.round(
+              scaledLegalFees
+            ).toLocaleString()}.`,
             "success"
           );
         } else {
-          this.game.company.cash -= 800000; // Massive fine
-          this.game.company.valuation -= 1500000; // Major valuation hit
+          this.game.company.cash -= scaledFinePenalty; // Massive fine
+          this.game.company.valuation -= scaledValuationHit; // Major valuation hit
 
           this.game.addNotification(
-            "Appeal failed. Court imposed maximum penalties and restrictions.",
+            `Appeal failed. Court imposed maximum penalties of $${Math.round(
+              scaledFinePenalty
+            ).toLocaleString()} and restrictions, reducing your valuation by $${Math.round(
+              scaledValuationHit
+            ).toLocaleString()}.`,
             "negative"
           );
         }
@@ -1312,5 +1526,207 @@ class EventSystem {
 
       // Add more special effects as needed
     }
+  }
+
+  /**
+   * Add chain events to the event pool
+   * @private
+   */
+  _addChainEvents() {
+    // Chain events are only triggered through other events
+    this.eventPool.chain = [
+      {
+        id: "team_morale_crisis",
+        title: "Team Morale Crisis",
+        description:
+          "Recent decisions have led to a significant drop in team morale. Several key employees are considering leaving.",
+        type: "negative",
+        isChainEvent: true,
+        choices: [
+          {
+            text: "Hold team building retreat",
+            effects: {
+              company: { cash: -20000, teamMorale: 0.3 },
+            },
+          },
+          {
+            text: "One-on-one meetings with key team members",
+            effects: {
+              company: { teamMorale: 0.2 },
+            },
+          },
+          {
+            text: "Offer salary increases",
+            effects: {
+              company: { cash: -50000, teamMorale: 0.25 },
+            },
+          },
+        ],
+      },
+      {
+        id: "major_pivot_outcome",
+        title: "Pivot Results",
+        description:
+          "Your major business pivot is showing initial results. The transition has been challenging but there are promising signs.",
+        type: "neutral",
+        isChainEvent: true,
+        choices: [
+          {
+            text: "Double down on the new direction",
+            effects: {
+              company: {
+                cash: -10000000,
+                users: 200000,
+                valuation: 100000000,
+                productQuality: 0.2,
+              },
+            },
+          },
+          {
+            text: "Make adjustments based on early feedback",
+            effects: {
+              company: {
+                cash: -5000000,
+                users: 100000,
+                valuation: 50000000,
+                productQuality: 0.1,
+              },
+            },
+          },
+          {
+            text: "Revert to original business model",
+            effects: {
+              company: {
+                users: 50000,
+                valuation: -20000000,
+                teamMorale: -0.2,
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "ipo_preparation",
+        title: "IPO Preparation",
+        description:
+          "Your board and investors are pushing for an IPO to provide liquidity. The market conditions seem favorable, but going public would bring new pressures and scrutiny.",
+        type: "risk_reward",
+        minValuation: 500000000, // Only for companies valued at $500M+
+        minRevenue: 5000000, // Only for companies with $5M+ monthly revenue
+        choices: [
+          {
+            text: "Begin IPO preparations",
+            effects: {
+              company: {
+                cash: -5000000,
+                valuation: 100000000,
+                teamMorale: -0.1,
+              },
+              special: "ipo_preparation",
+            },
+          },
+          {
+            text: "Raise one more private funding round instead",
+            effects: {
+              company: {
+                valuation: 50000000,
+                equity: { player: -0.1 },
+              },
+            },
+          },
+          {
+            text: "Delay IPO decision for another year",
+            effects: {
+              company: {
+                teamMorale: -0.05,
+                valuation: -20000000,
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "regulatory_battle",
+        title: "Regulatory Battle Outcome",
+        description:
+          "After months of legal challenges, the regulatory situation has reached a critical point. Your legal team has presented the likely outcomes.",
+        type: "negative",
+        isChainEvent: true,
+        choices: [
+          {
+            text: "Settle and implement required changes",
+            effects: {
+              company: {
+                cash: -50000000,
+                valuation: -100000000,
+                users: -200000,
+              },
+            },
+          },
+          {
+            text: "Continue legal fight to the highest court",
+            effects: {
+              company: {
+                cash: -100000000,
+                valuation: -200000000,
+                teamMorale: -0.2,
+              },
+              special: "regulatory_final_outcome",
+            },
+          },
+          {
+            text: "Restructure company to address concerns",
+            effects: {
+              company: {
+                cash: -30000000,
+                valuation: -50000000,
+                productQuality: -0.1,
+                users: -100000,
+              },
+            },
+          },
+        ],
+      },
+      {
+        id: "acquisition_opportunity",
+        title: "Acquisition Target Found",
+        description:
+          "Your team has identified a promising smaller competitor that would complement your business well. They seem open to acquisition talks.",
+        type: "opportunity",
+        isChainEvent: true,
+        choices: [
+          {
+            text: "Make aggressive acquisition offer",
+            effects: {
+              company: {
+                cash: -30000000,
+                users: 100000,
+                valuation: 50000000,
+                productQuality: 0.1,
+              },
+            },
+          },
+          {
+            text: "Propose merger of equals",
+            effects: {
+              company: {
+                cash: -10000000,
+                users: 50000,
+                valuation: 20000000,
+                equity: { player: -0.1 },
+              },
+            },
+          },
+          {
+            text: "Decline and focus on organic growth",
+            effects: {
+              company: {
+                valuation: -5000000,
+              },
+            },
+          },
+        ],
+      },
+    ];
   }
 }

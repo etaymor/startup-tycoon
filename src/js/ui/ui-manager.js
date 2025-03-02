@@ -26,6 +26,7 @@ class UIManager {
       cashDisplay: document.getElementById("current-cash"),
       usersDisplay: document.getElementById("current-users"),
       valuationDisplay: document.getElementById("current-valuation"),
+      // difficultyDisplay: document.getElementById("current-difficulty"),
 
       // Company info
       companyNameDisplay: document.getElementById("company-name-value"),
@@ -416,6 +417,26 @@ class UIManager {
     this.elements.cashDisplay.textContent = `Cash: $${this.game.company.cash.toLocaleString()}`;
     this.elements.usersDisplay.textContent = `Users: ${this.game.company.users.toLocaleString()}`;
     this.elements.valuationDisplay.textContent = `Valuation: $${this.game.company.valuation.toLocaleString()}`;
+
+    // Update difficulty display if dynamic difficulty is enabled
+    // if (this.game.dynamicDifficulty) {
+    //   const difficultyMultiplier = this.game.dynamicDifficulty.difficultyMultiplier;
+    //   let difficultyText = "Normal";
+    //
+    //   if (difficultyMultiplier <= 0.8) {
+    //     difficultyText = "Easy";
+    //   } else if (difficultyMultiplier <= 0.95) {
+    //     difficultyText = "Moderate";
+    //   } else if (difficultyMultiplier <= 1.05) {
+    //     difficultyText = "Normal";
+    //   } else if (difficultyMultiplier <= 1.2) {
+    //     difficultyText = "Challenging";
+    //   } else {
+    //     difficultyText = "Hard";
+    //   }
+    //
+    //   this.elements.difficultyDisplay.textContent = `Difficulty: ${difficultyText}`;
+    // }
   }
 
   /**
@@ -540,171 +561,327 @@ class UIManager {
 
       dashboardDiv.appendChild(metricCard);
     });
+
+    // Add difficulty info to dashboard if dynamic difficulty is enabled
+    // if (this.game.dynamicDifficulty) {
+    //   this._addDifficultyInfoToDashboard(dashboardDiv);
+    // }
   }
 
   /**
-   * Populate product screen
+   * Add difficulty information to the dashboard
+   * @param {HTMLElement} dashboardDiv - The dashboard container element
+   * @private
+   */
+  _addDifficultyInfoToDashboard(dashboardDiv) {
+    const difficultySection = document.createElement("div");
+    difficultySection.className = "dashboard-section difficulty-info";
+
+    // Create section header
+    const sectionHeader = document.createElement("h3");
+    sectionHeader.textContent = "Market Conditions";
+    difficultySection.appendChild(sectionHeader);
+
+    // Get difficulty info
+    const difficultyMultiplier =
+      this.game.dynamicDifficulty.difficultyMultiplier;
+    let difficultyText = "Normal";
+    let marketConditionText = "Stable";
+
+    if (difficultyMultiplier <= 0.8) {
+      difficultyText = "Easy";
+      marketConditionText = "Favorable";
+    } else if (difficultyMultiplier <= 0.95) {
+      difficultyText = "Moderate";
+      marketConditionText = "Mostly Favorable";
+    } else if (difficultyMultiplier <= 1.05) {
+      difficultyText = "Normal";
+      marketConditionText = "Stable";
+    } else if (difficultyMultiplier <= 1.2) {
+      difficultyText = "Challenging";
+      marketConditionText = "Competitive";
+    } else {
+      difficultyText = "Hard";
+      marketConditionText = "Highly Competitive";
+    }
+
+    // Create difficulty info content
+    const infoContent = document.createElement("div");
+    infoContent.className = "difficulty-info-content";
+
+    // Add market condition info
+    const marketCondition = document.createElement("div");
+    marketCondition.className = "difficulty-metric";
+    marketCondition.innerHTML = `<span class="metric-label">Market Condition:</span> <span class="metric-value">${marketConditionText}</span>`;
+    infoContent.appendChild(marketCondition);
+
+    // Add competitor aggressiveness info
+    const competitorAggressiveness = document.createElement("div");
+    competitorAggressiveness.className = "difficulty-metric";
+    const aggressivenessLevel =
+      difficultyMultiplier > 1.1
+        ? "High"
+        : difficultyMultiplier > 0.9
+        ? "Medium"
+        : "Low";
+    competitorAggressiveness.innerHTML = `<span class="metric-label">Competitor Aggressiveness:</span> <span class="metric-value">${aggressivenessLevel}</span>`;
+    infoContent.appendChild(competitorAggressiveness);
+
+    // Add operational costs info
+    const operationalCosts = document.createElement("div");
+    operationalCosts.className = "difficulty-metric";
+    const costsLevel =
+      difficultyMultiplier > 1.1
+        ? "Rising"
+        : difficultyMultiplier > 0.9
+        ? "Stable"
+        : "Decreasing";
+    operationalCosts.innerHTML = `<span class="metric-label">Operational Costs:</span> <span class="metric-value">${costsLevel}</span>`;
+    infoContent.appendChild(operationalCosts);
+
+    // Add market growth info
+    const marketGrowth = document.createElement("div");
+    marketGrowth.className = "difficulty-metric";
+    const growthLevel =
+      difficultyMultiplier > 1.1
+        ? "Slowing"
+        : difficultyMultiplier > 0.9
+        ? "Steady"
+        : "Accelerating";
+    marketGrowth.innerHTML = `<span class="metric-label">Market Growth:</span> <span class="metric-value">${growthLevel}</span>`;
+    infoContent.appendChild(marketGrowth);
+
+    // Add info content to section
+    difficultySection.appendChild(infoContent);
+
+    // Add section to dashboard
+    dashboardDiv.appendChild(difficultySection);
+  }
+
+  /**
+   * Populate the product screen with current product data
    * @private
    */
   _populateProductScreen() {
-    const productDiv = document.querySelector("#product-screen .feature-list");
-
-    // Clear existing content
+    const productDiv = document.getElementById("product-screen");
     productDiv.innerHTML = "";
 
-    // Add product quality indicator
+    // Product quality indicator
     const qualityDiv = document.createElement("div");
-    qualityDiv.className = "metric-card";
+    qualityDiv.className = "product-quality";
     qualityDiv.innerHTML = `
-            <h3>Product Quality</h3>
-            <div class="metric-value">${Math.round(
-              this.game.company.product.quality * 100
-            )}%</div>
-            <div class="retro-progress">
-                <div class="retro-progress-bar" style="width:${
-                  this.game.company.product.quality * 100
-                }%"></div>
-                <div class="retro-progress-value">${Math.round(
-                  this.game.company.product.quality * 100
-                )}%</div>
-            </div>
-        `;
+      <h3>Product Quality</h3>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${
+          this.game.company.product.quality * 100
+        }%"></div>
+        <span>${Math.round(
+          this.game.company.product.quality * 100
+        )}% Quality</span>
+      </div>
+    `;
     productDiv.appendChild(qualityDiv);
 
-    // Add new feature form
-    const newFeatureDiv = document.createElement("div");
-    newFeatureDiv.className = "panel";
-    newFeatureDiv.innerHTML = `
-            <h3>Develop New Feature</h3>
-            <div class="form-group">
-                <label for="feature-name">Feature Name:</label>
-                <input type="text" id="feature-name" placeholder="Enter feature name">
-            </div>
-            <div class="form-group">
-                <label for="feature-description">Description:</label>
-                <input type="text" id="feature-description" placeholder="Describe what this feature does">
-            </div>
-            <div class="form-group">
-                <label for="feature-complexity">Complexity:</label>
-                <select id="feature-complexity">
-                    <option value="simple">Simple - Quick to build, small impact</option>
-                    <option value="medium" selected>Medium - Balanced time and impact</option>
-                    <option value="complex">Complex - Long build time, big impact</option>
-                </select>
-            </div>
-            <button id="create-feature-button" class="primary-button">Start Development</button>
+    // Feature development section
+    const featureDevDiv = document.createElement("div");
+    featureDevDiv.className = "feature-development";
+    featureDevDiv.innerHTML = `<h3>Develop New Feature</h3>`;
+
+    // Create form for developing new features
+    const featureForm = document.createElement("form");
+    featureForm.className = "feature-form";
+    featureForm.innerHTML = `
+      <div class="form-group">
+        <label for="feature-complexity">Feature Complexity:</label>
+        <select id="feature-complexity" required>
+          <option value="simple">Simple (${CONFIG.FEATURE_COMPLEXITY_LEVELS.simple.cost.toLocaleString()} cost, ${
+      CONFIG.FEATURE_COMPLEXITY_LEVELS.simple.time
+    } turns)</option>
+          <option value="medium" selected>Medium (${CONFIG.FEATURE_COMPLEXITY_LEVELS.medium.cost.toLocaleString()} cost, ${
+      CONFIG.FEATURE_COMPLEXITY_LEVELS.medium.time
+    } turns)</option>
+          <option value="complex">Complex (${CONFIG.FEATURE_COMPLEXITY_LEVELS.complex.cost.toLocaleString()} cost, ${
+      CONFIG.FEATURE_COMPLEXITY_LEVELS.complex.time
+    } turns)</option>
+        </select>
+      </div>
+      <div class="feature-info">
+        <p>Features will be automatically generated based on your product's industry and selected complexity level.</p>
+        <p>Some features may require other features to be completed first.</p>
+      </div>
+      <button type="submit" class="btn" id="develop-feature-btn">Start Development</button>
+    `;
+
+    featureDevDiv.appendChild(featureForm);
+    productDiv.appendChild(featureDevDiv);
+
+    // Display feature categories
+    const categories =
+      CONFIG.FEATURE_CATEGORIES[this.game.company.industry] || [];
+    if (categories.length > 0) {
+      const categoriesDiv = document.createElement("div");
+      categoriesDiv.className = "feature-categories";
+      categoriesDiv.innerHTML = `<h3>Feature Categories</h3>`;
+
+      const categoriesList = document.createElement("div");
+      categoriesList.className = "categories-list";
+
+      categories.forEach((category) => {
+        const categoryItem = document.createElement("div");
+        categoryItem.className = "category-item";
+        categoryItem.innerHTML = `
+          <h4>${category.name}</h4>
+          <p>${category.description}</p>
         `;
-    productDiv.appendChild(newFeatureDiv);
+        categoriesList.appendChild(categoryItem);
+      });
 
-    // Add feature creation handler
-    const createFeatureButton = newFeatureDiv.querySelector(
-      "#create-feature-button"
-    );
-    createFeatureButton.addEventListener("click", () => {
-      const nameInput = newFeatureDiv.querySelector("#feature-name");
-      const descriptionInput = newFeatureDiv.querySelector(
-        "#feature-description"
-      );
-      const complexitySelect = newFeatureDiv.querySelector(
-        "#feature-complexity"
-      );
+      categoriesDiv.appendChild(categoriesList);
+      productDiv.appendChild(categoriesDiv);
+    }
 
-      const name = nameInput.value.trim();
-      const description = descriptionInput.value.trim();
+    // Display existing features
+    const featuresDiv = document.createElement("div");
+    featuresDiv.className = "existing-features";
+    featuresDiv.innerHTML = `<h3>Features</h3>`;
+
+    // Group features by category
+    const featuresByCategory = {};
+    this.game.company.product.features.forEach((feature) => {
+      if (!featuresByCategory[feature.categoryName]) {
+        featuresByCategory[feature.categoryName] = [];
+      }
+      featuresByCategory[feature.categoryName].push(feature);
+    });
+
+    // Create a container for all features
+    const featuresContainer = document.createElement("div");
+    featuresContainer.className = "features-container";
+
+    // Display features by category
+    Object.keys(featuresByCategory).forEach((categoryName) => {
+      const categoryDiv = document.createElement("div");
+      categoryDiv.className = "feature-category-group";
+      categoryDiv.innerHTML = `<h4>${categoryName}</h4>`;
+
+      const categoryFeatures = document.createElement("div");
+      categoryFeatures.className = "category-features";
+
+      featuresByCategory[categoryName].forEach((feature) => {
+        const featureItem = document.createElement("div");
+        featureItem.className = `feature-item ${
+          feature.completed ? "completed" : "in-progress"
+        }`;
+
+        // Get dependency names
+        let dependencyText = "";
+        if (feature.dependencies && feature.dependencies.length > 0) {
+          const dependencyNames = feature.dependencies.join(", ");
+          dependencyText = `<div class="feature-dependencies">Requires: ${dependencyNames}</div>`;
+        }
+
+        featureItem.innerHTML = `
+          <div class="feature-header">
+            <h4>${feature.name}</h4>
+            <span class="feature-complexity ${feature.complexity}">${
+          feature.complexity
+        }</span>
+          </div>
+          <p>${feature.description}</p>
+          ${dependencyText}
+          <div class="feature-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${
+                feature.progress * 100
+              }%"></div>
+              <span>${Math.round(feature.progress * 100)}%</span>
+            </div>
+          </div>
+          <div class="feature-details">
+            <span>Cost: $${feature.cost.toLocaleString()}</span>
+            <span>Time: ${feature.timeRequired} turns</span>
+            <span>Impact: +${Math.round(feature.impact * 100)}% quality</span>
+          </div>
+        `;
+
+        categoryFeatures.appendChild(featureItem);
+      });
+
+      categoryDiv.appendChild(categoryFeatures);
+      featuresContainer.appendChild(categoryDiv);
+    });
+
+    // If no features by category, show the original flat list
+    if (Object.keys(featuresByCategory).length === 0) {
+      const featuresList = document.createElement("div");
+      featuresList.className = "features-list";
+
+      this.game.company.product.features.forEach((feature) => {
+        const featureItem = document.createElement("div");
+        featureItem.className = `feature-item ${
+          feature.completed ? "completed" : "in-progress"
+        }`;
+        featureItem.innerHTML = `
+          <div class="feature-header">
+            <h4>${feature.name}</h4>
+            <span class="feature-complexity ${feature.complexity}">${
+          feature.complexity
+        }</span>
+          </div>
+          <p>${feature.description}</p>
+          <div class="feature-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${
+                feature.progress * 100
+              }%"></div>
+              <span>${Math.round(feature.progress * 100)}%</span>
+            </div>
+          </div>
+          <div class="feature-details">
+            <span>Cost: $${feature.cost.toLocaleString()}</span>
+            <span>Time: ${feature.timeRequired} turns</span>
+            <span>Impact: +${Math.round(feature.impact * 100)}% quality</span>
+          </div>
+        `;
+        featuresList.appendChild(featureItem);
+      });
+
+      featuresContainer.appendChild(featuresList);
+    }
+
+    featuresDiv.appendChild(featuresContainer);
+    productDiv.appendChild(featuresDiv);
+
+    // Add event listener for feature development form
+    featureForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const complexitySelect = document.getElementById("feature-complexity");
       const complexity = complexitySelect.value;
 
-      if (!name) {
-        this.game.addNotification("Please enter a feature name", "error");
-        return;
-      }
-
-      // Check if we can afford this feature
+      // Check if company has enough cash
       const cost = CONFIG.FEATURE_COMPLEXITY_LEVELS[complexity].cost;
-      if (cost > this.game.company.cash) {
-        this.game.addNotification(
-          `Not enough cash to develop this feature. Need $${cost.toLocaleString()}.`,
+      if (this.game.company.cash < cost) {
+        this.showNotification(
+          `Not enough cash to develop a ${complexity} feature. Need $${cost.toLocaleString()}.`,
           "error"
         );
         return;
       }
 
-      // Create the feature
+      // Develop the feature
       const feature = this.game.company.developFeature({
-        name: name,
-        description: description || `A ${complexity} feature`,
         complexity: complexity,
       });
 
-      // Clear the form
-      nameInput.value = "";
-      descriptionInput.value = "";
-
-      // Add notification
-      this.game.addNotification(
-        `Started development of "${feature.name}"`,
+      // Show notification
+      this.showNotification(
+        `Started development of new feature: ${feature.name}`,
         "success"
       );
 
-      // Refresh the list
+      // Refresh the product screen
       this._populateProductScreen();
     });
-
-    // List existing features
-    const featuresHeader = document.createElement("h3");
-    featuresHeader.textContent = "Features In Development";
-    productDiv.appendChild(featuresHeader);
-
-    const features = this.game.company.product.features;
-
-    if (features.length === 0) {
-      const noFeaturesDiv = document.createElement("div");
-      noFeaturesDiv.className = "empty-state";
-      noFeaturesDiv.textContent =
-        "No features in development. Start building your product!";
-      productDiv.appendChild(noFeaturesDiv);
-    } else {
-      // Sort features - in-progress first, then completed
-      const sortedFeatures = [...features].sort((a, b) => {
-        if (a.completed && !b.completed) return 1;
-        if (!a.completed && b.completed) return -1;
-        return 0;
-      });
-
-      sortedFeatures.forEach((feature) => {
-        const featureItem = document.createElement("div");
-        featureItem.className = `feature-item ${
-          feature.completed ? "completed" : ""
-        }`;
-
-        featureItem.innerHTML = `
-                    <div class="feature-info">
-                        <div class="feature-name">${feature.name} ${
-          feature.completed ? "(Completed)" : ""
-        }</div>
-                        <div class="feature-description">${
-                          feature.description
-                        }</div>
-                        ${
-                          !feature.completed
-                            ? `
-                            <div class="retro-progress">
-                                <div class="retro-progress-bar" style="width:${
-                                  feature.progress * 100
-                                }%"></div>
-                                <div class="retro-progress-value">${Math.round(
-                                  feature.progress * 100
-                                )}%</div>
-                            </div>
-                        `
-                            : ""
-                        }
-                    </div>
-                    <div class="feature-cost">$${feature.cost.toLocaleString()}</div>
-                `;
-
-        productDiv.appendChild(featureItem);
-      });
-    }
   }
 
   /**
@@ -889,6 +1066,18 @@ class UIManager {
     // Clear existing content
     marketingDiv.innerHTML = "";
 
+    // Add info about persistent marketing budgets
+    const infoDiv = document.createElement("div");
+    infoDiv.className = "marketing-info";
+    infoDiv.innerHTML = `
+      <div class="info-box">
+        <h3>Marketing Budget Info</h3>
+        <p>Marketing budgets are persistent and will automatically be reapplied each month.</p>
+        <p>Budgets will only be applied if you have sufficient cash available.</p>
+      </div>
+    `;
+    marketingDiv.appendChild(infoDiv);
+
     // Add brand awareness
     const brandDiv = document.createElement("div");
     brandDiv.className = "marketing-channel";
@@ -932,16 +1121,63 @@ class UIManager {
         acquisitions: 0,
       };
 
+      // Calculate saturation effects for display
+      let saturationText = "";
+      let saturationClass = "";
+
+      if (channelData.usageHistory && channelData.usageHistory.length > 0) {
+        const recentUsageSum = channelData.usageHistory.reduce(
+          (sum, val) => sum + val,
+          0
+        );
+        const channelSaturation = Math.max(0.6, 1 - recentUsageSum / 20);
+
+        if (channelSaturation < 0.7) {
+          saturationText = "Highly Saturated";
+          saturationClass = "high-saturation";
+        } else if (channelSaturation < 0.8) {
+          saturationText = "Moderately Saturated";
+          saturationClass = "medium-saturation";
+        } else if (channelSaturation < 0.9) {
+          saturationText = "Slightly Saturated";
+          saturationClass = "low-saturation";
+        } else {
+          saturationText = "Fresh";
+          saturationClass = "no-saturation";
+        }
+      } else {
+        saturationText = "Fresh";
+        saturationClass = "no-saturation";
+      }
+
+      // Calculate market saturation based on game progress
+      const marketSaturation = Math.max(
+        0.5,
+        1 - (this.game.state.currentTurn / 100) * 0.5
+      );
+      let marketSaturationText = "";
+
+      if (marketSaturation < 0.6) {
+        marketSaturationText = "Market highly saturated with ads";
+      } else if (marketSaturation < 0.75) {
+        marketSaturationText = "Market becoming saturated with ads";
+      } else {
+        marketSaturationText = "Market still receptive to ads";
+      }
+
       const channelDiv = document.createElement("div");
       channelDiv.className = "marketing-channel";
       channelDiv.innerHTML = `
                 <h3>${channel.name}</h3>
                 <div class="channel-stats">
                     <div>Cost Per User: $${channel.costPerUser}</div>
-                    <div>Efficiency: ${Math.round(
+                    <div>Base Efficiency: ${Math.round(
                       channel.efficiency * 100
                     )}%</div>
+                    <div>Channel Status: <span class="${saturationClass}">${saturationText}</span></div>
+                    <div class="market-saturation-info">${marketSaturationText}</div>
                     <div>Last Month Acquisitions: ${channelData.acquisitions.toLocaleString()} users</div>
+                    
                 </div>
                 <div class="slider-container">
                     <div class="slider-header">
@@ -965,7 +1201,7 @@ class UIManager {
                 </div>
                 <button class="allocate-button" data-channel="${
                   channel.id
-                }">Allocate Budget</button>
+                }">Set Monthly Budget</button>
             `;
       marketingDiv.appendChild(channelDiv);
 
@@ -1024,8 +1260,15 @@ class UIManager {
                     <td class="positive-value">$${this.game.company.revenue.toLocaleString()}</td>
                 </tr>
                 <tr>
-                    <th>Monthly Expenses</th>
-                    <td class="negative-value">$${this.game.company.costs.toLocaleString()}</td>
+                    <th>Monthly Recurring Expenses</th>
+                    <td class="negative-value">$${(
+                      this.game.company.costs -
+                      this.game.company.marketing.budget
+                    ).toLocaleString()}</td>
+                </tr>
+                <tr>
+                    <th>Marketing Expenses (already deducted)</th>
+                    <td class="negative-value">$${this.game.company.marketing.budget.toLocaleString()}</td>
                 </tr>
                 <tr>
                     <th>Burn Rate</th>
@@ -1825,6 +2068,29 @@ class UIManager {
         break;
     }
 
+    // Prepare share text based on game stats
+    const companyName = this.game.company.name;
+    const valuation = this.game.company.valuation.toLocaleString();
+    const users = this.game.company.users.toLocaleString();
+    const revenue = this.game.company.revenue.toLocaleString();
+    const months = this.game.state.currentTurn;
+
+    let shareText = "";
+    switch (reason) {
+      case "bankruptcy":
+        shareText = `My startup ${companyName} went bankrupt after ${months} months in Startup Tycoon! Final stats: $${valuation} valuation, ${users} users, $${revenue}/month revenue. Can you do better?`;
+        break;
+      case "acquisition":
+        shareText = `My startup ${companyName} was acquired for $${data.acquisitionValue.toLocaleString()} in Startup Tycoon! Final stats: ${users} users, $${revenue}/month revenue after ${months} months. Can you beat that?`;
+        break;
+      case "ipo":
+        shareText = `My startup ${companyName} went public with a $${data.ipoValue.toLocaleString()} valuation in Startup Tycoon! Final stats: ${users} users, $${revenue}/month revenue after ${months} months. Can you beat that?`;
+        break;
+      default:
+        shareText = `My startup ${companyName} reached a $${valuation} valuation with ${users} users and $${revenue}/month revenue after ${months} months in Startup Tycoon! Can you do better?`;
+        break;
+    }
+
     // Create the content
     gameOverModal.innerHTML = `
             <div class="modal-content">
@@ -1849,6 +2115,30 @@ class UIManager {
                     </ul>
                 </div>
                 
+                <div class="share-results">
+                    <h3>Share Your Results</h3>
+                    <div class="share-buttons">
+                        <button id="game-over-share-x" class="share-button" title="Share on X">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                            </svg>
+                            <span>Share on X</span>
+                        </button>
+                        <button id="game-over-share-facebook" class="share-button" title="Share on Facebook">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M9.198 21.5h4v-8.01h3.604l.396-3.98h-4V7.5a1 1 0 0 1 1-1h3v-4h-3a5 5 0 0 0-5 5v2.01h-2l-.396 3.98h2.396v8.01Z" />
+                            </svg>
+                            <span>Share on Facebook</span>
+                        </button>
+                        <button id="game-over-share-linkedin" class="share-button" title="Share on LinkedIn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z" />
+                            </svg>
+                            <span>Share on LinkedIn</span>
+                        </button>
+                    </div>
+                </div>
+                
                 <div class="game-over-actions">
                     <button id="new-game-button" class="primary-button">Start New Game</button>
                 </div>
@@ -1859,6 +2149,40 @@ class UIManager {
     const newGameButton = gameOverModal.querySelector("#new-game-button");
     newGameButton.addEventListener("click", () => {
       this.showStartGameModal();
+      document.body.removeChild(gameOverModal);
+    });
+
+    // Add share button handlers
+    const shareXButton = gameOverModal.querySelector("#game-over-share-x");
+    shareXButton.addEventListener("click", () => {
+      const url = window.location.href;
+      const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        shareText
+      )}&url=${encodeURIComponent(url)}`;
+      window.open(shareUrl, "_blank", "width=550,height=420");
+    });
+
+    const shareFacebookButton = gameOverModal.querySelector(
+      "#game-over-share-facebook"
+    );
+    shareFacebookButton.addEventListener("click", () => {
+      const url = window.location.href;
+      // Facebook doesn't support custom text in the share dialog, only the URL
+      const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        url
+      )}&quote=${encodeURIComponent(shareText)}`;
+      window.open(shareUrl, "_blank", "width=550,height=420");
+    });
+
+    const shareLinkedInButton = gameOverModal.querySelector(
+      "#game-over-share-linkedin"
+    );
+    shareLinkedInButton.addEventListener("click", () => {
+      const url = window.location.href;
+      const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+        url
+      )}`;
+      window.open(shareUrl, "_blank", "width=550,height=420");
     });
 
     // Add to document body
